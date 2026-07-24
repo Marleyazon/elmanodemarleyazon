@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma Langue</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:linear-gradient(180deg,#58cc02,#46a302);
+    min-height:100vh;
+    color:white;
+    padding-bottom:90px;
+}
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px;
+    font-size:18px;
+    font-weight:bold;
+    color:white;
+}
+
+h1{
+    text-align:center;
+    margin-top:10px;
+    font-size:45px;
+}
+
+.sous{
+    text-align:center;
+    font-size:18px;
+    opacity:0.9;
+    margin-top:5px;
+    margin-bottom:20px;
+}
+
+.banner{
+    width:420px;
+    max-width:90%;
+    margin:15px auto;
+    background:linear-gradient(135deg, #ff9800, #ff5722);
+    color:white;
+    border-radius:20px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+.global-banner{
+    position:fixed;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#ffcc00;
+    color:#333;
+    padding:12px 25px;
+    border-radius:15px;
+    font-weight:bold;
+    font-size:16px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
+    z-index:9999;
+    display:none;
+    text-align:center;
+}
+
+.carte{
+    width:420px;
+    max-width:90%;
+    margin:20px auto;
+    background:white;
+    color:#333;
+    border-radius:30px;
+    padding:35px;
+    text-align:center;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
+}
+
+.carte h2{
+    color:#58cc02;
+    margin-bottom:15px;
+}
+
+.carte p{
+    margin-bottom:20px;
+    font-size:18px;
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border:2px solid #ddd;
+    border-radius:15px;
+    font-size:16px;
+}
+
+button.main-btn{
+    background:#58cc02;
+    color:white;
+    border:none;
+    border-radius:20px;
+    padding:15px 40px;
+    font-size:20px;
+    cursor:pointer;
+    transition:0.2s;
+    width:100%;
+    margin-top:10px;
+}
+
+button.main-btn:hover{
+    transform:scale(1.05);
+}
+
+button.main-btn:active{
+    transform:scale(0.95);
+}
+
+.lesson-path{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    margin:30px 0;
+}
+
+.lesson-btn{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:#58cc02;
+    color:white;
+    border:none;
+    font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 8px 0 #46a302;
+    transition:0.1s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+}
+
+.lesson-btn.chest{
+    background:linear-gradient(135deg, #ffd700, #ff8c00);
+    box-shadow:0 8px 0 #b8860b;
+}
+
+.lesson-btn:active{
+    transform:translateY(4px);
+    box-shadow:0 4px 0 #46a302;
+}
+
+.lesson-btn.locked{
+    background:#e5e5e5;
+    color:#afafaf;
+    box-shadow:0 8px 0 #cccccc;
+    cursor:not-allowed;
+}
+
+.choice-btn{
+    background:white;
+    color:#333;
+    border:2px solid #e5e5e5;
+    border-radius:20px;
+    padding:15px;
+    font-size:20px;
+    margin:10px 0;
+    cursor:pointer;
+    width:100%;
+    transition:0.2s;
+}
+
+.choice-btn:hover{
+    background:#f7f7f7;
+    border-color:#58cc02;
+}
+
+.error-msg{
+    color:red;
+    font-weight:bold;
+    margin-top:10px;
+    font-size:16px;
+}
+
+.bottom{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    background:white;
+    display:flex;
+    justify-content:space-around;
+    padding:14px;
+    color:#58cc02;
+    font-size:18px;
+    font-weight:bold;
+    box-shadow:0 -5px 15px rgba(0,0,0,0.1);
+    z-index:100;
+}
+
+.bottom div{
+    cursor:pointer;
+    transition:.2s;
+}
+
+.bottom div:hover{
+    transform:scale(1.15);
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    20% { transform: translate(-3px, 0px) rotate(-1deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    80% { transform: translate(1px, -1px) rotate(1deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.chest-anim {
+    font-size: 80px;
+    animation: shake 0.5s infinite;
+    margin: 20px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div id="global-announcement" class="global-banner"></div>
+<div id="app"></div>
+
+<div class="bottom" id="bottom-nav"></div>
+
+<script>
+const dictionnairesMots = {
+    "Elmaño": {
+        1: { mot: "bonjour", trad: "bon jue" },
+        2: { mot: "merci", trad: "mercì" },
+        3: { mot: "au revoir", trad: "o side" },
+        4: { mot: "noël", trad: "noél" },
+        5: { mot: "cadeau", trad: "cado" },
+        6: { mot: "reveillon", trad: "revaillòn" },
+        7: { mot: "aussi", trad: "ossi" },
+        8: { mot: "et", trad: "e" },
+        9: { mot: "je suis", trad: "sùìs" },
+        10: { mot: "tu es", trad: "és" },
+        11: { mot: "il est", trad: "es" },
+        12: { mot: "nous sommes", trad: "somes" },
+        13: { mot: "vous etes", trad: "etes" },
+        14: { mot: "ils sont", trad: "son" },
+        15: { mot: "avoir", trad: "avèr" },
+        16: { mot: "j'ai", trad: "a" },
+        17: { mot: "tu as", trad: "to ù" },
+        18: { mot: "il a", trad: "ava" },
+        19: { mot: "nous avons", trad: "avemes" },
+        20: { mot: "vous avez", trad: "avetes" },
+        21: { mot: "ils ont", trad: "avemetes" },
+        22: { mot: "un", trad: "uń" },
+        23: { mot: "une", trad: "uña" },
+        24: { mot: "du", trad: "del" },
+        25: { mot: "de", trad: "de" },
+        26: { mot: "des", trad: "del de" },
+        27: { mot: "beau", trad: "bo" },
+        28: { mot: "belle", trad: "ba" },
+        29: { mot: "magnifique", trad: "mañifìco" },
+        30: { mot: "cette", trad: "está" },
+        31: { mot: "ce", trad: "esta" },
+        32: { mot: "c'est", trad: "es" },
+        33: { mot: "mon", trad: "mi" },
+        34: { mot: "ma", trad: "ma" },
+        35: { mot: "ton", trad: "tù" },
+        36: { mot: "ta", trad: "ta" },
+        37: { mot: "moi", trad: "mì" },
+        38: { mot: "mais", trad: "maìs" },
+        39: { mot: "maison", trad: "maìsone" },
+        40: { mot: "pourquoi", trad: "pùrqùe" },
+        41: { mot: "quoi", trad: "qùe" },
+        42: { mot: "que", trad: "qùe" },
+        43: { mot: "qui", trad: "qùì" },
+        44: { mot: "ou", trad: "ù" },
+        45: { mot: "où", trad: "donde" },
+        46: { mot: "pour", trad: "pùr" },
+        47: { mot: "car", trad: "para ce qùe" },
+        48: { mot: "parce-que", trad: "parce qùe" }
+    },
+    "Espagnol": {
+        1: { mot: "bonjour", trad: "hola" },
+        2: { mot: "merci", trad: "gracias" },
+        3: { mot: "au revoir", trad: "adios" },
+        4: { mot: "comment ca va", trad: "como te va" },
+        5: { mot: "le", trad: "el" },
+        6: { mot: "la", trad: "la" },
+        7: { mot: "soleil", trad: "sol" },
+        8: { mot: "lune", trad: "luna" },
+        9: { mot: "livre", trad: "libro" },
+        10: { mot: "voiture", trad: "coche" },
+        11: { mot: "table", trad: "mesa" },
+        12: { mot: "chaise", trad: "silla" },
+        13: { mot: "pomme", trad: "manzana" },
+        14: { mot: "eau", trad: "agua" },
+        15: { mot: "pain", trad: "pan" },
+        16: { mot: "chat", trad: "gato" },
+        17: { mot: "chien", trad: "perro" },
+        18: { mot: "maison", trad: "casa" },
+        19: { mot: "ami", trad: "amigo" },
+        20: { mot: "terre", trad: "tierra" }
+    },
+    "Portugais": {
+        1: { mot: "bonjour", trad: "ola" },
+        2: { mot: "merci", trad: "obrigado" },
+        3: { mot: "au revoir", trad: "adeus" },
+        4: { mot: "comment ca va", trad: "como vai" },
+        5: { mot: "le", trad: "o" },
+        6: { mot: "la", trad: "a" },
+        7: { mot: "soleil", trad: "sol" },
+        8: { mot: "lune", trad: "lua" },
+        9: { mot: "livre", trad: "livro" },
+        10: { mot: "voiture", trad: "carro" },
+        11: { mot: "table", trad: "mesa" },
+        12: { mot: "chaise", trad: "cadeira" },
+        13: { mot: "pomme", trad: "maca" },
+        14: { mot: "eau", trad: "agua" },
+        15: { mot: "pain", trad: "pao" },
+        16: { mot: "chat", trad: "gato" },
+        17: { mot: "chien", trad: "cao" },
+        18: { mot: "maison", trad: "casa" },
+        19: { mot: "ami", trad: "amigo" },
+        20: { mot: "terre", trad: "terra" }
+    }
+};
+
+let globalSettings = JSON.parse(localStorage.getItem("maLangueGlobalSettings")) || {
+    luckMultiplier: 1,
+    globalMsgText: "",
+    globalMsgTime: 0
+};
+
+let users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
+let etat = JSON.parse(localStorage.getItem("maLangueEtat")) || {
+    langue: "Elmaño",
+    pseudo: "",
+    diamants: 0,
+    feu: 0,
+    leconActuelle: 1,
+    leconEnCours: null,
+    freeSkips: 0,
+    gelSerie1J: 0,
+    gelSerie2J: 0,
+    usedCodes: [],
+    vies: 3,
+    infiniteLivesActive: false,
+    infiniteLivesExpiry: 0,
+    dernierePerteVie: null,
+    coffresOouverts: [],
+    levelSkipPurchases: 0
+};
+
+function verifierVies(){
+    if(etat.vies === undefined || etat.vies === null || isNaN(etat.vies)){
+        etat.vies = 3;
+    }
+    if(etat.infiniteLivesActive){
+        if(Date.now() > etat.infiniteLivesExpiry){
+            etat.infiniteLivesActive = false;
+        } else {
+            etat.vies = 3;
+            return;
+        }
+    }
+    
+    let intervalVie = 2 * 60 * 60 * 1000;
+    if(etat.vies < 3 && etat.dernierePerteVie){
+        let maintenant = Date.now();
+        let tempsEcoule = maintenant - etat.dernierePerteVie;
+        let viesGagnees = Math.floor(tempsEcoule / intervalVie);
+        if(viesGagnees > 0){
+            etat.vies = Math.min(3, etat.vies + viesGagnees);
+            etat.dernierePerteVie = etat.vies < 3 ? etat.dernierePerteVie + (viesGagnees * intervalVie) : null;
+            sauvegarder();
+        }
+    }
+}
+
+function sauvegarder(){
+    if(etat.vies === undefined || etat.vies === null || isNaN(etat.vies)){
+        etat.vies = 3;
+    }
+    etat.coffresOouverts = etat.coffresOouverts || [];
+    etat.levelSkipPurchases = etat.levelSkipPurchases || 0;
+    localStorage.setItem("maLangueEtat", JSON.stringify(etat));
+    localStorage.setItem("maLangueGlobalSettings", JSON.stringify(globalSettings));
+    if(etat.pseudo){
+        users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
+        users[etat.pseudo] = etat;
+        localStorage.setItem("maLangueUsers", JSON.stringify(users));
+    }
+}
+
+function verifierMessageGlobal(){
+    let savedGS = JSON.parse(localStorage.getItem("maLangueGlobalSettings"));
+    if(savedGS && savedGS.globalMsgText && (Date.now() - savedGS.globalMsgTime < 5000)){
+        const banner = document.getElementById("global-announcement");
+        banner.innerText = savedGS.globalMsgText;
+        banner.style.display = "block";
+        setTimeout(() => {
+            banner.style.display = "none";
+        }, 5000);
+    }
+}
+
+setInterval(verifierMessageGlobal, 2000);
+
+function estAdminTotal(pseudo){
+    if(!pseudo) return false;
+    let p = pseudo.trim();
+    return p === "MarleyazonAdmin51_Elmaño" || p === "MarleyazonAdmin51_Elmano" || p === "MarleyaznAdmin51_Elmaño" || p === "MarleyaznAdmin51_Elmano";
+}
+
+function mettreAJourNavigation(){
+    verifierVies();
+    const nav = document.getElementById("bottom-nav");
+    let isFullAdmin = estAdminTotal(etat.pseudo);
+    let hasAPF = (etat.usedCodes && etat.usedCodes.includes("APF"));
+    let showAdminTab = isFullAdmin || hasAPF;
+
+    nav.innerHTML = `
+        <div onclick="afficherAccueil()">🏠</div>
+        <div onclick="ouvrirLecons()">📚</div>
+        <div onclick="ouvrirBoutique()">🛒</div>
+        <div onclick="ouvrirParametres()">⚙️</div>
+        <div onclick="ouvrirInfos()">ℹ️</div>
+        <div onclick="ouvrirProfil()">👤</div>
+        ${showAdminTab ? '<div onclick="ouvrirAdmin()">🛡️</div>' : ''}
+    `;
+}
+
+let activeQuestions = [];
+let currentQuestionIndex = 0;
+let currentLessonDiamonds = 10;
+let erreursLecon = 0;
+let shopErrorMsg = "";
+let currentSelectedWords = [];
+
+window.onload = function(){
+    verifierVies();
+    if(!etat.pseudo){
+        afficherSetup();
+    } else {
+        mettreAJourNavigation();
+        afficherAccueil();
+    }
+};
+
+function afficherSetup(){
+    shopErrorMsg = "";
+    users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="carte" id="setup-screen">
+            <h2>Configuration</h2>
+            <p>Choisis ta langue et indique ton pseudo :</p>
+            <select id="lang-select">
+                <option value="Elmaño" ${etat.langue === "Elmaño" ? "selected" : ""}>Elmaño</option>
+                <option value="Espagnol" ${etat.langue === "Espagnol" ? "selected" : ""}>Espagnol</option>
+                <option value="Portugais" ${etat.langue === "Portugais" ? "selected" : ""}>Portugais</option>
+            </select>
+            <input type="text" id="pseudo-input" placeholder="Ton pseudo..." value="${etat.pseudo}" />
+            <button class="main-btn" onclick="validerSetup()">Commencer</button>
+        </div>
+    `;
+}
+
+function validerSetup(){
+    const select = document.getElementById("lang-select").value;
+    const pseudo = document.getElementById("pseudo-input").value.trim();
+    if(!pseudo){
+        alert("Entre un pseudo valide !");
+        return;
+    }
+
+    users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
+
+    if(users[pseudo]){
+        etat = JSON.parse(JSON.stringify(users[pseudo]));
+        etat.langue = select;
+    } else {
+        etat = {
+            langue: select,
+            pseudo: pseudo,
+            diamants: 0,
+            feu: 0,
+            leconActuelle: 1,
+            leconEnCours: null,
+            freeSkips: 0,
+            gelSerie1J: 0,
+            gelSerie2J: 0,
+            usedCodes: [],
+            vies: 3,
+            infiniteLivesActive: false,
+            infiniteLivesExpiry: 0,
+            dernierePerteVie: null,
+            coffresOouverts: [],
+            levelSkipPurchases: 0
+        };
+    }
+    etat.coffresOouverts = etat.coffresOouverts || [];
+    etat.levelSkipPurchases = etat.levelSkipPurchases || 0;
+
+    sauvegarder();
+    mettreAJourNavigation();
+    afficherAccueil();
+}
+
+function afficherAccueil(){
+    verifierVies();
+    if(!etat.pseudo){
+        afficherSetup();
+        return;
+    }
+    shopErrorMsg = "";
+    mettreAJourNavigation();
+    let lessonButtonsHtml = '';
+    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+    for(let i = 1; i <= maxLecons; i++){
+        let isChest = (i % 5 === 0);
+        let chestClass = isChest ? ' chest' : '';
+        let chestIcon = isChest ? '🎁 ' : '';
+        lessonButtonsHtml += `<button class="lesson-btn${chestClass} ${etat.leconActuelle >= i ? '' : 'locked'}" onclick="lancerLecon(${i})">${chestIcon}${i}</button>`;
+    }
+
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>❤️ ${etat.infiniteLivesActive ? 'Infini' : etat.vies + '/3'} | 🔥 ${etat.feu}</div>
+            <div>👤 ${etat.pseudo}</div>
+            <div>💎 ${etat.diamants}</div>
+        </div>
+        <h1>Ma Langue</h1>
+        <div class="sous">Apprends ${etat.langue} en t'amusant !</div>
+        
+        <div class="banner">
+            <h3>Bienvenue !</h3>
+            <p>Niveaux progressifs avec des phrases, serie de victoires et coffres mysteres !</p>
+        </div>
+
+        <div class="lesson-path">
+            ${lessonButtonsHtml}
+        </div>
+    `;
+}
+
+function ouvrirLecons(){
+    afficherAccueil();
+}
+
+function obtenirDonneesLecons(num){
+    let motsLangue = dictionnairesMots[etat.langue] || dictionnairesMots["Elmaño"];
+    let allKeys = Object.keys(motsLangue);
+    let questions = [];
+    
+    let count = 10;
+    if(num === 1) count = 2;
+    else if(num === 2) count = 3;
+    else if(num === 3) count = 5;
+    else if(num >= 4 && num <= 20) count = 10;
+    else if(num >= 21 && num <= 35) count = 15;
+
+    for(let i = 0; i < count; i++){
+        let usePhrase = (etat.langue === "Elmaño" && num > 5 && i % 2 === 1);
+        
+        if(usePhrase){
+            let phrasesEx = [
+                { mot: "c'est beau", trad: "es bo" },
+                { mot: "c'est une maison", trad: "es uña maìsone" },
+                { mot: "j'ai un cadeau", trad: "a uń cado" },
+                { mot: "tu es magnifique", trad: "tù es mañifìco" },
+                { mot: "mon beau cadeau", trad: "mi bo cado" },
+                { mot: "ta belle maison", trad: "ta ba maìsone" },
+                { mot: "je suis beau", trad: "sùìs bo" }
+            ];
+            let phraseItem = phrasesEx[(num + i) % phrasesEx.length];
+            let wrongPhrase1 = phrasesEx[(i + 1) % phrasesEx.length].trad;
+            let wrongPhrase2 = phrasesEx[(i + 2) % phrasesEx.length].trad;
+
+            let typeEx = i % 3;
+            if(typeEx === 0){
+                questions.push({
+                    type: "choice",
+                    question: 'Comment traduit-on la phrase "' + phraseItem.mot + '" en Elmaño ?',
+                    options: [phraseItem.trad, wrongPhrase1, wrongPhrase2],
+                    correct: 0
+                });
+            } else if(typeEx === 1){
+                questions.push({
+                    type: "input",
+                    question: 'Ecris la traduction exacte de la phrase "' + phraseItem.mot + '" en Elmaño :',
+                    correct: phraseItem.trad
+                });
+            } else {
+                let motsTrad = phraseItem.trad.split(' ');
+                let motsMelanges = [...motsTrad].sort(() => Math.random() - 0.5);
+                questions.push({
+                    type: "reorder",
+                    question: 'Remets les mots dans le bon ordre pour traduire "' + phraseItem.mot + '" :',
+                    words: motsMelanges,
+                    correct: phraseItem.trad
+                });
+            }
+        } else {
+            let wordKey = (((num - 1) * 2 + i) % allKeys.length) + 1;
+            let item = motsLangue[wordKey] || motsLangue[1];
+
+            let otherKeys = allKeys.filter(k => k != wordKey);
+            let wrongKey1 = otherKeys[i % otherKeys.length];
+            let wrongKey2 = otherKeys[(i + 1) % otherKeys.length];
+            let wrong1 = motsLangue[wrongKey1].trad;
+            let wrong2 = motsLangue[wrongKey2].trad;
+
+            let typeEx = (num + i) % 5;
+
+            if(typeEx === 0){
+                questions.push({
+                    type: "choice",
+                    question: 'Comment dit-on "' + item.mot + '" en ' + etat.langue + ' ?',
+                    options: [item.trad, wrong1, wrong2],
+                    correct: 0
+                });
+            } else if(typeEx === 1){
+                questions.push({
+                    type: "input",
+                    question: 'Ecris la traduction exacte de "' + item.mot + '" en ' + etat.langue + ' :',
+                    correct: item.trad
+                });
+            } else if(typeEx === 2){
+                let fauxTrad = (i % 2 === 0) ? wrong1 : item.trad;
+                let estVrai = (fauxTrad === item.trad);
+                questions.push({
+                    type: "choice",
+                    question: 'Vrai ou Faux : "' + item.mot + '" se traduit par "' + fauxTrad + '" en ' + etat.langue + ' ?',
+                    options: ["Vrai", "Faux"],
+                    correct: estVrai ? 0 : 1
+                });
+            } else if(typeEx === 3){
+                let motMelange = item.trad.split('').sort(() => Math.random() - 0.5).join('');
+                if(motMelange === item.trad) motMelange = item.trad.split('').reverse().join('');
+                questions.push({
+                    type: "input",
+                    question: 'Remets les lettres dans le bon ordre pour traduire "' + item.mot + '" : ' + motMelange,
+                    correct: item.trad
+                });
+            } else {
+                let motsTrad = item.trad.split(' ');
+                let motsMelanges = [...motsTrad].sort(() => Math.random() - 0.5);
+                questions.push({
+                    type: "reorder",
+                    question: 'Remets les mots dans le bon ordre pour traduire "' + item.mot + '" :',
+                    words: motsMelanges,
+                    correct: item.trad
+                });
+            }
+        }
+    }
+    return questions;
+}
+
+function lancerLecon(num){
+    verifierVies();
+    if(!etat.infiniteLivesActive && etat.vies <= 0){
+        alert("Tu n'as plus de vies ! Tu dois attendre ou ouvrir un coffre.");
+        return;
+    }
+    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+    if(num > etat.leconActuelle){
+        alert("Cette lecon est verrouillee !");
+        return;
+    }
+    etat.leconEnCours = num;
+    currentQuestionIndex = 0;
+    currentLessonDiamonds = 10;
+    erreursLecon = 0;
+    currentSelectedWords = [];
+    
+    let questionsOriginales = obtenirDonneesLecons(num);
+    activeQuestions = [...questionsOriginales].sort(() => Math.random() - 0.5);
+    
+    afficherQuestion();
+}
+
+function afficherQuestion(){
+    verifierVies();
+    etat.coffresOouverts = etat.coffresOouverts || [];
+    if(!etat.infiniteLivesActive && etat.vies <= 0){
+        alert("Tu as perdu toutes tes vies ! Retour a l'accueil.");
+        etat.leconEnCours = null;
+        afficherAccueil();
+        return;
+    }
+
+    const questions = activeQuestions;
+    currentSelectedWords = [];
+    
+    if(currentQuestionIndex >= questions.length){
+        etat.diamants += currentLessonDiamonds;
+        let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+        let estCoffre = (etat.leconEnCours % 5 === 0);
+        let dejaOuvert = etat.coffresOouverts.includes(etat.leconEnCours);
+
+        if(etat.leconEnCours === etat.leconActuelle && etat.leconActuelle < maxLecons){
+            etat.leconActuelle++;
+            etat.feu++;
+        }
+
+        if(estCoffre && !dejaOuvert){
+            lancerAnimationCoffre();
+            return;
+        }
+
+        terminerLeconAffichage(estCoffre, dejaOuvert, "");
+        return;
+    }
+
+    const q = questions[currentQuestionIndex];
+    const app = document.getElementById("app");
+    
+    let htmlContent = `
+        <div class="top">
+            <div>Vies: ${etat.infiniteLivesActive ? 'Infini' : (etat.vies ?? 3) + '/3'} | 🔥 ${etat.feu}</div>
+            <div><button onclick="acheterSautEnCours()" style="background:white; color:#58cc02; border:none; padding:5px 10px; border-radius:10px; cursor:pointer; font-weight:bold;">Sauter (${etat.freeSkips > 0 ? 'Gratuit' : '⚡'})</button></div>
+        </div>
+        <div class="carte">
+            <h2>Question ${currentQuestionIndex + 1} / ${questions.length}</h2>
+            <p>${q.question}</p>
+    `;
+
+    if(q.type === "choice"){
+        let optionsMelangees = q.options.map((opt, idx) => ({text: opt, originalIndex: idx}));
+        if(q.options.length > 2){
+            optionsMelangees.sort(() => Math.random() - 0.5);
+        }
+        
+        optionsMelangees.forEach(item => {
+            htmlContent += `<button class="choice-btn" onclick="verifierChoix(${item.originalIndex}, ${q.correct})">${item.text}</button>`;
+        });
+    } else if(q.type === "input"){
+        htmlContent += `
+            <input type="text" id="user-answer" placeholder="Ta reponse..." />
+            <button class="main-btn" onclick="verifierSaisie('${q.correct.replace(/'/g, "\\'")}')">Valider</button>
+        `;
+    } else if(q.type === "reorder"){
+        let wordsHtml = q.words.map((w, idx) => `<button class="choice-btn" id="word-btn-${idx}" onclick="selectionnerMotReordre('${w}', ${idx})">${w}</button>`).join('');
+        htmlContent += `
+            <div style="background:#f0f0f0; padding:15px; border-radius:15px; margin-bottom:15px; min-height:50px; color:#333; font-weight:bold; font-size:18px;" id="reorder-target">
+                Clique sur les mots pour former la phrase...
+            </div>
+            ${wordsHtml}
+            <button class="main-btn" onclick="verifierReordre('${q.correct.replace(/'/g, "\\'")}')">Valider</button>
+            <button class="main-btn" style="background:#888; margin-top:5px;" onclick="resetReordre()">Effacer</button>
+        `;
+    }
+
+    htmlContent += `</div>`;
+    app.innerHTML = htmlContent;
+}
+
+function lancerAnimationCoffre(){
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>Coffre Mystere</div>
+            <div>Ouverture...</div>
+        </div>
+        <div class="carte">
+            <h2>Ouverture du coffre !</h2>
+            <div class="chest-anim">🎁</div>
+            <p>Un objet mystere est en train de sortir...</p>
+        </div>
+    `;
+
+    setTimeout(() => {
+        calculerRecompenseCoffre();
+    }, 1800);
+}
+
+function calculerRecompenseCoffre(){
+    let luck = globalSettings.luckMultiplier || 1;
+    let rand = Math.floor(Math.random() * 10000) + 1;
+    let recompenseTexte = "";
+
+    if(rand <= 30){
+        let minutes = 15;
+        etat.infiniteLivesActive = true;
+        etat.infiniteLivesExpiry = Date.now() + (minutes * 60 * 1000);
+        recompenseTexte = minutes + " minutes de vies illimitees";
+    } else if(rand <= 150){
+        etat.gelSerie1J += 1;
+        recompenseTexte = "1 Gel de serie";
+    } else if(rand <= 500){
+        etat.freeSkips += 1;
+        recompenseTexte = "1 Passe de niveaux";
+    } else if(rand <= 2500){
+        if(etat.vies < 3){
+            etat.vies = Math.min(3, etat.vies + 1);
+            recompenseTexte = "1 vie en plus";
+        } else {
+            etat.diamants += 15;
+            recompenseTexte = "15 diamants (vies deja au maximum)";
+        }
+    } else {
+        let diamondRand = Math.floor(1000 * (1 - Math.sqrt(Math.random())));
+        if(diamondRand < 1) diamondRand = 1;
+        diamondRand *= luck;
+        etat.diamants += diamondRand;
+        recompenseTexte = diamondRand + " diamants";
+    }
+
+    etat.coffresOouverts.push(etat.leconEnCours);
+    etat.leconEnCours = null;
+    sauvegarder();
+
+    terminerLeconAffichage(true, false, recompenseTexte);
+}
+
+function terminerLeconAffichage(estCoffre, dejaOuvert, recompenseTexte){
+    let totalQuestions = activeQuestions.length + erreursLecon;
+    let pourcentage = totalQuestions > 0 ? Math.round((activeQuestions.length / totalQuestions) * 100) : 100;
+
+    const app = document.getElementById("app");
+    let coffreHtml = (estCoffre && recompenseTexte) ? `
+        <div style="background:linear-gradient(135deg, #ffd700, #ff8c00); padding:15px; border-radius:15px; margin-bottom:15px; color:#333;">
+            <h3>Objet sorti du coffre !</h3>
+            <p>Tu as gagne : <b>${recompenseTexte}</b></p>
+        </div>
+    ` : (estCoffre && dejaOuvert ? `<p style="color:#888; font-size:14px;">Coffre deja ouvert pour ce niveau.</p>` : '');
+
+    app.innerHTML = `
+        <div class="top">
+            <div>Resultat</div>
+            <div>+${currentLessonDiamonds} Diamants</div>
+        </div>
+        <div class="carte">
+            <h2>Lecon terminee !</h2>
+            ${coffreHtml}
+            <p>Pourcentage de reussite : <b>${pourcentage}%</b></p>
+            <p>Diamants gagnes : <b>+${currentLessonDiamonds}</b></p>
+            <button class="main-btn" onclick="afficherAccueil()">Continuer</button>
+        </div>
+    `;
+}
+
+function gererErreur(){
+    erreursLecon++;
+    currentLessonDiamonds = Math.max(0, currentLessonDiamonds - 1);
+    if(!etat.infiniteLivesActive){
+        etat.vies = (etat.vies ?? 3) - 1;
+        if(etat.vies <= 0){
+            etat.vies = 0;
+        }
+        etat.dernierePerteVie = Date.now();
+    }
+    sauvegarder();
+    alert("Mauvaise reponse ! " + (etat.infiniteLivesActive ? "Vies illimitees" : "-1 vie (Vies: " + etat.vies + "/3)") + " et -1 diamant");
+}
+
+function selectionnerMotReordre(word, idx){
+    currentSelectedWords.push(word);
+    document.getElementById(`word-btn-${idx}`).style.display = 'none';
+    document.getElementById('reorder-target').innerText = currentSelectedWords.join(' ');
+}
+
+function resetReordre(){
+    currentSelectedWords = [];
+    afficherQuestion();
+}
+
+function verifierReordre(correct){
+    let reponseUtilisateur = currentSelectedWords.join(' ').trim().toLowerCase();
+    let solution = correct.trim().toLowerCase();
+    if(reponseUtilisateur === solution){
+        currentQuestionIndex++;
+        afficherQuestion();
+    } else {
+        gererErreur();
+        if(!etat.infiniteLivesActive && etat.vies <= 0){
+            etat.leconEnCours = null;
+            afficherAccueil();
+            return;
+        }
+        afficherQuestion();
+    }
+}
+
+function verifierChoix(selected, correct){
+    if(selected === correct){
+        currentQuestionIndex++;
+        afficherQuestion();
+    } else {
+        gererErreur();
+        if(!etat.infiniteLivesActive && etat.vies <= 0){
+            etat.leconEnCours = null;
+            afficherAccueil();
+            return;
+        }
+        afficherQuestion();
+    }
+}
+
+function verifierSaisie(correctAnswer){
+    const userInput = document.getElementById("user-answer").value.trim().toLowerCase();
+    let solution = correctAnswer.trim().toLowerCase();
+    if(userInput === solution){
+        currentQuestionIndex++;
+        afficherQuestion();
+    } else {
+        gererErreur();
+        if(!etat.infiniteLivesActive && etat.vies <= 0){
+            etat.leconEnCours = null;
+            afficherAccueil();
+            return;
+        }
+        afficherQuestion();
+    }
+}
+
+function getLevelSkipPrice(){
+    let count = etat.levelSkipPurchases || 0;
+    if(count === 0) return 1000;
+    if(count === 1) return 6150;
+    if(count >= 2 && count < 9) return 12500;
+    if(count === 9) return 12000;
+    return 12500;
+}
+
+function ouvrirBoutique(){
+    if(!etat.pseudo) return;
+    let skipPrice = getLevelSkipPrice();
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>Boutique</div>
+            <div>${etat.diamants} Diamants</div>
+        </div>
+        <div class="carte">
+            <h2>Magasin</h2>
+            <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
+                <p><b>Gel de serie 1 jour</b><br>25 000 Diamants</p>
+                <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('gel1')">Acheter</button>
+            </div>
+            <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
+                <p><b>Gel de serie 2 jours</b><br>45 000 Diamants</p>
+                <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('gel2')">Acheter</button>
+            </div>
+            <div style="margin-bottom:10px;">
+                <p><b>Saut de question / niveau</b><br>${skipPrice.toLocaleString()} Diamants</p>
+                <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('saut')">Acheter</button>
+            </div>
+            <div id="shop-error" class="error-msg">${shopErrorMsg}</div>
+            <button class="main-btn" style="background:#888; margin-top:15px;" onclick="afficherAccueil()">Retour</button>
+        </div>
+    `;
+}
+
+function acheterBoutique(article){
+    shopErrorMsg = "";
+    if(article === 'gel1'){
+        if(etat.diamants >= 25000){
+            etat.diamants -= 25000;
+            etat.gelSerie1J++;
+            sauvegarder();
+            alert("Achat reussi : Gel 1 jour ajoute !");
+            ouvrirBoutique();
+        } else {
+            shopErrorMsg = "Pas assez de diamants";
+            ouvrirBoutique();
+        }
+    } else if(article === 'gel2'){
+        if(etat.diamants >= 45000){
+            etat.diamants -= 45000;
+            etat.gelSerie2J++;
+            sauvegarder();
+            alert("Achat reussi : Gel 2 jours ajoute !");
+            ouvrirBoutique();
+        } else {
+            shopErrorMsg = "Pas assez de diamants";
+            ouvrirBoutique();
+        }
+    } else if(article === 'saut'){
+        let price = getLevelSkipPrice();
+        if(etat.diamants >= price){
+            etat.diamants -= price;
+            etat.freeSkips++;
+            etat.levelSkipPurchases = (etat.levelSkipPurchases || 0) + 1;
+            sauvegarder();
+            alert("Achat reussi : Saut de niveau ajoute !");
+            ouvrirBoutique();
+        } else {
+            shopErrorMsg = "Pas assez de diamants";
+            ouvrirBoutique();
+        }
+    }
+}
+
+function acheterSautEnCours(){
+    if(etat.freeSkips > 0){
+        etat.freeSkips--;
+        sauvegarder();
+        currentQuestionIndex++;
+        alert("Question sautee gratuitement !");
+        afficherQuestion();
+        return;
+    }
+    let price = getLevelSkipPrice();
+    if(etat.diamants >= price){
+        etat.diamants -= price;
+        etat.levelSkipPurchases = (etat.levelSkipPurchases || 0) + 1;
+        sauvegarder();
+        currentQuestionIndex++;
+        alert("Question sautee !");
+        afficherQuestion();
+    } else {
+        alert("Pas assez de diamants");
+    }
+}
+
+function ouvrirParametres(){
+    if(!etat.pseudo) return;
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>Parametres</div>
+            <div>${etat.diamants} Diamants</div>
+        </div>
+        <div class="carte">
+            <h2>Codes et Options</h2>
+            <p>Entre ton code promo :</p>
+            <input type="text" id="code-input" placeholder="Ex: ABC" />
+            <button class="main-btn" onclick="validerCode()">Valider le code</button>
+            <div style="height:20px;"></div>
+            <button class="main-btn" style="background:#ff4444;" onclick="reinitialiserDonnees()">Reinitialiser</button>
+            <button class="main-btn" style="background:#888; margin-top:10px;" onclick="afficherAccueil()">Retour</button>
+        </div>
+    `;
+}
+
+function validerCode(){
+    const code = document.getElementById("code-input").value.trim().toUpperCase();
+    if(!code){
+        alert("Entre un code valide !");
+        return;
+    }
+    etat.usedCodes = etat.usedCodes || [];
+    if(etat.usedCodes.includes(code)){
+        alert("Ce code a deja ete utilise !");
+        return;
+    }
+
+    if(code === "ABC"){
+        etat.freeSkips++;
+        etat.usedCodes.push(code);
+        sauvegarder();
+        alert("Code valide ! Saut gratuit gagne.");
+        ouvrirParametres();
+    } else if(code === "APF"){
+        etat.usedCodes.push(code);
+        sauvegarder();
+        alert("Code APF valide ! Panel admin debloque.");
+        mettreAJourNavigation();
+        ouvrirAdmin();
+    } else {
+        alert("Code invalide !");
+    }
+}
+
+function ouvrirAdmin(){
+    const app = document.getElementById("app");
+    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+    let isFullAdmin = estAdminTotal(etat.pseudo);
+    let hasAPF = (etat.usedCodes && etat.usedCodes.includes("APF"));
+    let panelAccessible = isFullAdmin || hasAPF;
+
+    if(!panelAccessible){
+        alert("Acces refuse !");
+        afficherAccueil();
+        return;
+    }
+
+    let restrictedAttr = isFullAdmin ? '' : 'disabled style="opacity:0.5; cursor:not-allowed; background:#e5e5e5; color:#666;"';
+
+    app.innerHTML = `
+        <div class="top">
+            <div>Panel Admin</div>
+            <div>${etat.diamants} Diamants</div>
+        </div>
+        <div class="carte" style="max-height:80vh; overflow-y:auto;">
+            <h2>Mode Administrateur</h2>
+            <p>${isFullAdmin ? 'Bienvenue Boss :' : 'Acces restreint (Seul le deblocage des niveaux est disponible)'}</p>
+            
+            <p style="font-weight:bold; margin-top:10px;">Chance des cadeaux (Multiplicateur) :</p>
+            <select id="admin-luck" ${restrictedAttr}>
+                <option value="1" ${globalSettings.luckMultiplier == 1 ? "selected" : ""}>x1 (Normal)</option>
+                <option value="2" ${globalSettings.luckMultiplier == 2 ? "selected" : ""}>x2</option>
+                <option value="4" ${globalSettings.luckMultiplier == 4 ? "selected" : ""}>x4</option>
+                <option value="6" ${globalSettings.luckMultiplier == 6 ? "selected" : ""}>x6</option>
+                <option value="8" ${globalSettings.luckMultiplier == 8 ? "selected" : ""}>x8</option>
+            </select>
+            <button class="main-btn" style="padding:10px; font-size:16px; ${isFullAdmin ? '' : 'opacity:0.5; cursor:not-allowed; background:#e5e5e5; color:#666;'}" ${restrictedAttr} onclick="changerLuck()">Modifier Chance</button>
+
+            <p style="font-weight:bold; margin-top:15px;">S'ajouter des diamants personnalises :</p>
+            <input type="number" id="admin-add-diam" placeholder="Nombre de diamants..." ${restrictedAttr} />
+            <button class="main-btn" style="padding:10px; font-size:16px; ${isFullAdmin ? '' : 'opacity:0.5; cursor:not-allowed; background:#e5e5e5; color:#666;'}" ${restrictedAttr} onclick="ajouterDiamantsPerso()">Ajouter a mon compte</button>
+
+            <p style="font-weight:bold; margin-top:15px;">Message global en direct (visible 5s par tous) :</p>
+            <input type="text" id="admin-global-msg" placeholder="Ton message..." ${restrictedAttr} />
+            <button class="main-btn" style="padding:10px; font-size:16px; ${isFullAdmin ? '' : 'opacity:0.5; cursor:not-allowed; background:#e5e5e5; color:#666;'}" ${restrictedAttr} onclick="envoyerMessageGlobal()">Diffuser Globalement</button>
+
+            <p style="font-weight:bold; margin-top:15px;">Gestion des vies (Infini On/Off) :</p>
+            <button class="main-btn" style="background:${etat.infiniteLivesActive ? '#ff4444' : '#58cc02'}; padding:10px; font-size:16px; ${isFullAdmin ? '' : 'opacity:0.5; cursor:not-allowed; background:#e5e5e5; color:#666;'}" ${restrictedAttr} onclick="toggleViesInfiniAdmin()">${etat.infiniteLivesActive ? 'Desactiver Vies Illimitees' : 'Activer Vies Illimitees'}</button>
+            <input type="text" id="admin-target-user" placeholder="Pseudo d'une autre personne..." style="margin-top:10px;" ${restrictedAttr} />
+            <button class="main-btn" style="padding:10px; font-size:16px; ${isFullAdmin ? '' : 'opacity:0.5; cursor:not-allowed; background:#e5e5e5; color:#666;'}" ${restrictedAttr} onclick="toggleViesInfiniAutre()">Basculer Vies Illimitees (Autre)</button>
+
+            <p style="font-weight:bold; margin-top:15px;">Gestion des etapes / niveaux :</p>
+            <button class="main-btn" style="padding:10px; font-size:16px;" onclick="adminTousNiveaux()">Debloquer tous les niveaux (${maxLecons})</button>
+            <input type="text" id="admin-level-user" placeholder="Pseudo utilisateur..." style="margin-top:10px;" ${restrictedAttr} />
+            <input type="number" id="admin-level-val" placeholder="Niveau (ex: 10)..." ${restrictedAttr} />
+            <button class="main-btn" style="padding:10px; font-size:16px; ${isFullAdmin ? '' : 'opacity:0.5; cursor:not-allowed; background:#e5e5e5; color:#666;'}" ${restrictedAttr} onclick="modifierNiveauUtilisateur()">Modifier Niveau (Autre)</button>
+
+            <div style="height:15px;"></div>
+            <button class="main-btn" style="background:#888;" onclick="afficherAccueil()">Retour</button>
+        </div>
+    `;
+}
+
+function changerLuck(){
+    let val = parseInt(document.getElementById("admin-luck").value);
+    globalSettings.luckMultiplier = val;
+    sauvegarder();
+    alert("Multiplicateur de chance mis a jour : x" + val);
+}
+
+function ajouterDiamantsPerso(){
+    let val = parseInt(document.getElementById("admin-add-diam").value);
+    if(isNaN(val) || val <= 0){
+        alert("Entre un nombre valide de diamants !");
+        return;
+    }
+    etat.diamants += val;
+    sauvegarder();
+    alert("Ajout de " + val + " diamants reussi !");
+    ouvrirAdmin();
+}
+
+function envoyerMessageGlobal(){
+    let txt = document.getElementById("admin-global-msg").value.trim();
+    if(!txt) return;
+    globalSettings.globalMsgText = txt;
+    globalSettings.globalMsgTime = Date.now();
+    sauvegarder();
+    alert("Message diffuse a tout le monde pour 5 secondes !");
+}
+
+function toggleViesInfiniAdmin(){
+    etat.infiniteLivesActive = !etat.infiniteLivesActive;
+    if(etat.infiniteLivesActive){
+        etat.infiniteLivesExpiry = Date.now() + (24 * 60 * 60 * 1000);
+    }
+    sauvegarder();
+    alert("Vies illimitees " + (etat.infiniteLivesActive ? "activees" : "desactivees"));
+    ouvrirAdmin();
+}
+
+function toggleViesInfiniAutre(){
+    let pseudoCible = document.getElementById("admin-target-user").value.trim();
+    users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
+    if(!pseudoCible || !users[pseudoCible]){
+        alert("Utilisateur introuvable !");
+        return;
+    }
+    let targetEtat = users[pseudoCible];
+    targetEtat.infiniteLivesActive = !targetEtat.infiniteLivesActive;
+    if(targetEtat.infiniteLivesActive){
+        targetEtat.infiniteLivesExpiry = Date.now() + (24 * 60 * 60 * 1000);
+    }
+    users[pseudoCible] = targetEtat;
+    localStorage.setItem("maLangueUsers", JSON.stringify(users));
+    alert("Vies illimitees pour " + pseudoCible + " : " + (targetEtat.infiniteLivesActive ? "Actives" : "Desactives"));
+}
+
+function modifierNiveauUtilisateur(){
+    let pseudoCible = document.getElementById("admin-level-user").value.trim();
+    let niv = parseInt(document.getElementById("admin-level-val").value);
+    users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
+    if(!pseudoCible || !users[pseudoCible]){
+        alert("Utilisateur introuvable !");
+        return;
+    }
+    let targetEtat = users[pseudoCible];
+    targetEtat.leconActuelle = Math.max(1, niv);
+    users[pseudoCible] = targetEtat;
+    localStorage.setItem("maLangueUsers", JSON.stringify(users));
+    alert("Niveau de " + pseudoCible + " mis a jour a : " + niv);
+}
+
+function adminTousNiveaux(){
+    etat.leconActuelle = etat.langue === "Elmaño" ? 35 : 20;
+    sauvegarder();
+    alert("Tous les niveaux debloques !");
+    afficherAccueil();
+}
+
+function ouvrirInfos(){
+    if(!etat.pseudo) return;
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>Informations</div>
+            <div>${etat.diamants} Diamants</div>
+        </div>
+        <div class="carte">
+            <h2>Mises a jour</h2>
+            <p style="text-align:left; font-size:16px; line-height:1.5;">
+                • Paliers de prix dynamiques pour les sauts de niveaux.<br>
+                • Animation d'ouverture de coffre mystere avec recompenses aleatoires.<br>
+                • Conservation stricte des accents.
+            </p>
+            <button class="main-btn" onclick="afficherAccueil()">Retour</button>
+        </div>
+    `;
+}
+
+function ouvrirProfil(){
+    if(!etat.pseudo) return;
+    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>Profil</div>
+            <div>${etat.diamants} Diamants</div>
+        </div>
+        <div class="carte">
+            <h2>${etat.pseudo}</h2>
+            <p>Langue : <b>${etat.langue}</b></p>
+            <p>Diamants : <b>${etat.diamants}</b></p>
+            <p>Vies : <b>${etat.infiniteLivesActive ? 'Infini' : (etat.vies ?? 3) + '/3'}</b></p>
+            <p>Gel de serie (1J) : <b>❄️ ${etat.gelSerie1J}</b></p>
+            <p>Gel de serie (2J) : <b>❄️ ${etat.gelSerie2J}</b></p>
+            <p>Serie (Feu) : <b>🔥 ${etat.feu}</b></p>
+            <p>Sauts gratuits : <b>${etat.freeSkips}</b></p>
+            <p>Lecon actuelle : <b>${etat.leconActuelle} / ${maxLecons}</b></p>
+            <button class="main-btn" onclick="afficherSetup()">Modifier profil</button>
+            <div style="height:10px;"></div>
+            <button class="main-btn" style="background:#ff4444;" onclick="reinitialiserDonnees()">Reinitialiser</button>
+        </div>
+    `;
+}
+
+function reinitialiserDonnees(){
+    if(confirm("Veux-tu vraiment reinitialiser ?")){
+        etat.pseudo = "";
+        localStorage.removeItem("maLangueEtat");
+        mettreAJourNavigation();
+        afficherSetup();
+    }
+}
+</script>
+
+</body>
+</html>
