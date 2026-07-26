@@ -2,46 +2,90 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#58cc02">
 <title>Ma Langue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:'Baloo 2','Nunito',Arial, Helvetica, sans-serif;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html{
+    -webkit-text-size-adjust:100%;
+    overscroll-behavior-y:none;
 }
 
 body{
     background:linear-gradient(180deg,#58cc02,#46a302);
     min-height:100vh;
+    min-height:100dvh;
     color:white;
-    padding-bottom:90px;
+    padding-bottom:calc(90px + env(safe-area-inset-bottom));
+    overflow-x:hidden;
+    touch-action:manipulation;
+}
+
+button, .lesson-btn, .choice-btn{
+    -webkit-user-select:none;
+    user-select:none;
+    touch-action:manipulation;
 }
 
 .top{
+    position:sticky;
+    top:0;
+    z-index:50;
     display:flex;
-    justify-content:space-between;
+    justify-content:center;
     align-items:center;
-    padding:20px;
-    font-size:18px;
-    font-weight:bold;
-    color:white;
+    gap:8px;
+    padding:12px 14px;
+    padding-top:calc(12px + env(safe-area-inset-top));
+    font-size:14px;
+    font-weight:800;
+    color:#333;
+    background:linear-gradient(180deg,#58cc02 60%, rgba(88,204,2,0.85));
+    flex-wrap:wrap;
+    row-gap:6px;
+}
+
+.top > div{
+    background:rgba(255,255,255,0.95);
+    color:#4b4b4b;
+    padding:8px 12px;
+    border-radius:20px;
+    box-shadow:0 3px 0 rgba(0,0,0,0.08);
+    white-space:nowrap;
 }
 
 h1{
     text-align:center;
-    margin-top:10px;
-    font-size:45px;
+    margin-top:15px;
+    font-size:42px;
+    font-weight:800;
+    letter-spacing:0.5px;
+    text-shadow:0 3px 0 rgba(0,0,0,0.1);
 }
 
 .sous{
     text-align:center;
-    font-size:18px;
-    opacity:0.9;
+    font-size:17px;
+    font-weight:600;
+    opacity:0.95;
     margin-top:5px;
     margin-bottom:20px;
+    padding:0 20px;
 }
 
 .banner{
@@ -75,12 +119,12 @@ h1{
 
 .carte{
     width:420px;
-    max-width:90%;
+    max-width:92%;
     margin:20px auto;
     background:white;
     color:#333;
-    border-radius:30px;
-    padding:35px;
+    border-radius:24px;
+    padding:30px 25px;
     text-align:center;
     box-shadow:0 15px 40px rgba(0,0,0,0.2);
 }
@@ -88,41 +132,138 @@ h1{
 .carte h2{
     color:#58cc02;
     margin-bottom:15px;
+    font-weight:800;
 }
 
 .carte p{
     margin-bottom:20px;
     font-size:18px;
+    font-weight:600;
+    line-height:1.4;
 }
 
 input, select{
     width:100%;
-    padding:12px;
+    padding:14px;
     margin-bottom:15px;
-    border:2px solid #ddd;
+    border:2px solid #e5e5e5;
     border-radius:15px;
     font-size:16px;
+    font-family:inherit;
+    font-weight:600;
+    color:#333;
+    background:#fff;
+}
+
+input:focus, select:focus{
+    outline:none;
+    border-color:#58cc02;
 }
 
 button.main-btn{
     background:#58cc02;
     color:white;
     border:none;
-    border-radius:20px;
-    padding:15px 40px;
-    font-size:20px;
+    border-bottom:5px solid #46a302;
+    border-radius:16px;
+    padding:16px 40px;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
     cursor:pointer;
-    transition:0.2s;
+    transition:0.08s;
     width:100%;
     margin-top:10px;
 }
 
-button.main-btn:hover{
-    transform:scale(1.05);
+button.main-btn:active{
+    transform:translateY(4px);
+    border-bottom-width:1px;
 }
 
-button.main-btn:active{
-    transform:scale(0.95);
+.progress-wrap{
+    width:100%;
+    background:rgba(255,255,255,0.4);
+    border-radius:20px;
+    height:16px;
+    margin:6px 0 0 0;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    background:#ffc800;
+    border-radius:20px;
+    transition:width 0.35s ease;
+}
+
+.feedback-banner{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    padding:18px 20px calc(18px + env(safe-area-inset-bottom)) 20px;
+    z-index:200;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    box-shadow:0 -8px 25px rgba(0,0,0,0.15);
+    animation:slideUp 0.25s ease;
+}
+
+.feedback-banner.correct{ background:#d7ffb8; }
+.feedback-banner.incorrect{ background:#ffdfe0; }
+
+.feedback-banner .fb-text{
+    text-align:left;
+}
+
+.feedback-banner .fb-title{
+    font-size:19px;
+    font-weight:800;
+}
+
+.feedback-banner.correct .fb-title{ color:#58a700; }
+.feedback-banner.incorrect .fb-title{ color:#ea2b2b; }
+
+.feedback-banner .fb-sub{
+    font-size:14px;
+    font-weight:600;
+    color:#555;
+    margin-top:2px;
+}
+
+.feedback-banner button{
+    border:none;
+    border-radius:16px;
+    padding:14px 26px;
+    font-size:16px;
+    font-weight:800;
+    text-transform:uppercase;
+    cursor:pointer;
+    white-space:nowrap;
+}
+
+.feedback-banner.correct button{ background:#58cc02; color:white; border-bottom:4px solid #46a302; }
+.feedback-banner.incorrect button{ background:#ea2b2b; color:white; border-bottom:4px solid #b71c1c; }
+
+@keyframes slideUp{
+    from{ transform:translateY(100%); }
+    to{ transform:translateY(0); }
+}
+
+.choice-btn.is-correct{
+    background:#d7ffb8 !important;
+    border-color:#58cc02 !important;
+    color:#3c8e00;
+}
+
+.choice-btn.is-incorrect{
+    background:#ffdfe0 !important;
+    border-color:#ea2b2b !important;
+    color:#b91c1c;
 }
 
 .lesson-path{
@@ -133,28 +274,58 @@ button.main-btn:active{
     margin:30px 0;
 }
 
+.chapter-banner{
+    width:100%;
+    max-width:380px;
+    text-align:center;
+    background:rgba(0,0,0,0.18);
+    color:white;
+    font-weight:800;
+    font-size:15px;
+    padding:12px 14px;
+    border-radius:14px;
+    margin:8px 0 4px 0;
+}
+
 .lesson-btn{
-    width:90px;
-    height:90px;
+    width:78px;
+    height:78px;
+    min-width:64px;
+    min-height:64px;
     border-radius:50%;
     background:#58cc02;
     color:white;
     border:none;
-    font-size:24px;
-    font-weight:bold;
+    font-size:22px;
+    font-weight:800;
     cursor:pointer;
     box-shadow:0 8px 0 #46a302;
-    transition:0.1s;
+    transition:0.08s;
     display:flex;
     align-items:center;
     justify-content:center;
     position:relative;
 }
 
-.lesson-btn.chest{
-    background:linear-gradient(135deg, #ffd700, #ff8c00);
-    box-shadow:0 8px 0 #b8860b;
+.lesson-btn:nth-child(6n+2){ margin-left:50px; }
+.lesson-btn:nth-child(6n+3){ margin-left:80px; }
+.lesson-btn:nth-child(6n+4){ margin-left:50px; }
+.lesson-btn:nth-child(6n+6){ margin-left:-50px; }
+.lesson-btn:nth-child(6n+7){ margin-left:-80px; }
+.lesson-btn:nth-child(6n+8){ margin-left:-50px; }
+
+@media (max-width:380px){
+    .lesson-btn:nth-child(6n+2){ margin-left:30px; }
+    .lesson-btn:nth-child(6n+3){ margin-left:48px; }
+    .lesson-btn:nth-child(6n+4){ margin-left:30px; }
+    .lesson-btn:nth-child(6n+6){ margin-left:-30px; }
+    .lesson-btn:nth-child(6n+7){ margin-left:-48px; }
+    .lesson-btn:nth-child(6n+8){ margin-left:-30px; }
 }
+
+.lesson-btn.mythic-ch1{ box-shadow:0 8px 0 #46a302, 0 0 0 4px #ea2b2b; }
+.lesson-btn.mythic-ch2{ box-shadow:0 8px 0 #46a302, 0 0 0 4px #ff9800; }
+.lesson-btn.mythic-ch3{ box-shadow:0 8px 0 #46a302, 0 0 0 4px #ffe234; }
 
 .lesson-btn:active{
     transform:translateY(4px);
@@ -168,20 +339,59 @@ button.main-btn:active{
     cursor:not-allowed;
 }
 
+.chest-node{
+    width:58px;
+    height:58px;
+    min-width:50px;
+    min-height:50px;
+    border-radius:16px;
+    background:linear-gradient(135deg, #ffd700, #ff8c00);
+    color:white;
+    border:none;
+    font-size:26px;
+    cursor:pointer;
+    box-shadow:0 6px 0 #b8860b;
+    transition:0.08s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.chest-node:active{
+    transform:translateY(3px);
+    box-shadow:0 3px 0 #b8860b;
+}
+
+.chest-node.locked{
+    background:#e5e5e5;
+    color:#afafaf;
+    box-shadow:0 6px 0 #cccccc;
+    cursor:not-allowed;
+}
+
+.chest-node.opened{
+    opacity:0.55;
+}
+
 .choice-btn{
     background:white;
     color:#333;
     border:2px solid #e5e5e5;
-    border-radius:20px;
-    padding:15px;
-    font-size:20px;
-    margin:10px 0;
+    border-bottom:4px solid #e5e5e5;
+    border-radius:16px;
+    padding:16px;
+    font-size:18px;
+    font-weight:700;
+    margin:8px 0;
     cursor:pointer;
     width:100%;
-    transition:0.2s;
+    min-height:52px;
+    transition:0.12s;
 }
 
-.choice-btn:hover{
+.choice-btn:active{
+    transform:translateY(2px);
+    border-bottom-width:2px;
     background:#f7f7f7;
     border-color:#58cc02;
 }
@@ -201,9 +411,11 @@ button.main-btn:active{
     background:white;
     display:flex;
     justify-content:space-around;
-    padding:14px;
+    align-items:center;
+    padding:12px 6px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom));
     color:#58cc02;
-    font-size:18px;
+    font-size:24px;
     font-weight:bold;
     box-shadow:0 -5px 15px rgba(0,0,0,0.1);
     z-index:100;
@@ -211,11 +423,50 @@ button.main-btn:active{
 
 .bottom div{
     cursor:pointer;
-    transition:.2s;
+    transition:.15s;
+    padding:6px 10px;
+    border-radius:12px;
+    line-height:1;
 }
 
-.bottom div:hover{
-    transform:scale(1.15);
+.bottom div:active{
+    transform:scale(0.85);
+    background:#f0fbe6;
+}
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    z-index:300;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal-card{
+    background:white;
+    color:#333;
+    border-radius:24px;
+    padding:30px 25px;
+    max-width:380px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,0.3);
+}
+
+.modal-card h2{
+    margin-bottom:12px;
+    font-weight:800;
+}
+
+.modal-card p{
+    margin-bottom:16px;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.4;
+    color:#333;
 }
 
 @keyframes shake {
@@ -243,102 +494,159 @@ button.main-btn:active{
 <div class="bottom" id="bottom-nav"></div>
 
 <script>
-const dictionnairesMots = {
+const contenuLangues = {
     "Elmaño": {
-        1: { mot: "bonjour", trad: "bon jue" },
-        2: { mot: "merci", trad: "mercì" },
-        3: { mot: "au revoir", trad: "o side" },
-        4: { mot: "noël", trad: "noél" },
-        5: { mot: "cadeau", trad: "cado" },
-        6: { mot: "reveillon", trad: "revaillòn" },
-        7: { mot: "aussi", trad: "ossi" },
-        8: { mot: "et", trad: "e" },
-        9: { mot: "je suis", trad: "sùìs" },
-        10: { mot: "tu es", trad: "és" },
-        11: { mot: "il est", trad: "es" },
-        12: { mot: "nous sommes", trad: "somes" },
-        13: { mot: "vous etes", trad: "etes" },
-        14: { mot: "ils sont", trad: "son" },
-        15: { mot: "avoir", trad: "avèr" },
-        16: { mot: "j'ai", trad: "a" },
-        17: { mot: "tu as", trad: "to ù" },
-        18: { mot: "il a", trad: "ava" },
-        19: { mot: "nous avons", trad: "avemes" },
-        20: { mot: "vous avez", trad: "avetes" },
-        21: { mot: "ils ont", trad: "avemetes" },
-        22: { mot: "un", trad: "uń" },
-        23: { mot: "une", trad: "uña" },
-        24: { mot: "du", trad: "del" },
-        25: { mot: "de", trad: "de" },
-        26: { mot: "des", trad: "del de" },
-        27: { mot: "beau", trad: "bo" },
-        28: { mot: "belle", trad: "ba" },
-        29: { mot: "magnifique", trad: "mañifìco" },
-        30: { mot: "cette", trad: "está" },
-        31: { mot: "ce", trad: "esta" },
-        32: { mot: "c'est", trad: "es" },
-        33: { mot: "mon", trad: "mi" },
-        34: { mot: "ma", trad: "ma" },
-        35: { mot: "ton", trad: "tù" },
-        36: { mot: "ta", trad: "ta" },
-        37: { mot: "moi", trad: "mì" },
-        38: { mot: "mais", trad: "maìs" },
-        39: { mot: "maison", trad: "maìsone" },
-        40: { mot: "pourquoi", trad: "pùrqùe" },
-        41: { mot: "quoi", trad: "qùe" },
-        42: { mot: "que", trad: "qùe" },
-        43: { mot: "qui", trad: "qùì" },
-        44: { mot: "ou", trad: "ù" },
-        45: { mot: "où", trad: "donde" },
-        46: { mot: "pour", trad: "pùr" },
-        47: { mot: "car", trad: "para ce qùe" },
-        48: { mot: "parce-que", trad: "parce qùe" }
+        politesse: {
+            1:{mot:"bonjour", trad:"bon jue"},
+            2:{mot:"merci", trad:"mercì"},
+            3:{mot:"au revoir", trad:"o side"},
+            4:{mot:"s'il vous plaît", trad:"sìl vòs plaìt"},
+            5:{mot:"pardon", trad:"pardòn"},
+            6:{mot:"excuse-moi", trad:"eskùsa mì"},
+            7:{mot:"de rien", trad:"de reñ"},
+            8:{mot:"bienvenue", trad:"beñveñù"},
+            9:{mot:"enchanté", trad:"eñchantò"},
+            10:{mot:"bonne journée", trad:"bòna jurnada"}
+        },
+        vocabulaire: {
+            1:{mot:"le", trad:"lo"},
+            2:{mot:"la", trad:"la"},
+            3:{mot:"soleil", trad:"solèl"},
+            4:{mot:"lune", trad:"lùna"},
+            5:{mot:"livre", trad:"librù"},
+            6:{mot:"voiture", trad:"vaitùra"},
+            7:{mot:"table", trad:"tabla"},
+            8:{mot:"chaise", trad:"cadièra"},
+            9:{mot:"pomme", trad:"pomà"},
+            10:{mot:"eau", trad:"aigùa"},
+            11:{mot:"pain", trad:"pan"},
+            12:{mot:"chat", trad:"gatù"},
+            13:{mot:"chien", trad:"kanì"},
+            14:{mot:"maison", trad:"maìsone"},
+            15:{mot:"ami", trad:"amìgù"},
+            16:{mot:"terre", trad:"tèra"},
+            17:{mot:"un", trad:"uń"},
+            18:{mot:"une", trad:"uña"},
+            19:{mot:"du", trad:"del"},
+            20:{mot:"de", trad:"de"}
+        },
+        phrases: [
+            {mot:"c'est beau", trad:"es bo"},
+            {mot:"c'est une maison", trad:"es uña maìsone"},
+            {mot:"j'ai un cadeau", trad:"a uń cado"},
+            {mot:"tu es magnifique", trad:"tù es mañifìco"},
+            {mot:"mon beau cadeau", trad:"mi bo cado"},
+            {mot:"ta belle maison", trad:"ta ba maìsone"},
+            {mot:"je suis beau", trad:"sùìs bo"}
+        ]
     },
     "Espagnol": {
-        1: { mot: "bonjour", trad: "hola" },
-        2: { mot: "merci", trad: "gracias" },
-        3: { mot: "au revoir", trad: "adios" },
-        4: { mot: "comment ca va", trad: "como te va" },
-        5: { mot: "le", trad: "el" },
-        6: { mot: "la", trad: "la" },
-        7: { mot: "soleil", trad: "sol" },
-        8: { mot: "lune", trad: "luna" },
-        9: { mot: "livre", trad: "libro" },
-        10: { mot: "voiture", trad: "coche" },
-        11: { mot: "table", trad: "mesa" },
-        12: { mot: "chaise", trad: "silla" },
-        13: { mot: "pomme", trad: "manzana" },
-        14: { mot: "eau", trad: "agua" },
-        15: { mot: "pain", trad: "pan" },
-        16: { mot: "chat", trad: "gato" },
-        17: { mot: "chien", trad: "perro" },
-        18: { mot: "maison", trad: "casa" },
-        19: { mot: "ami", trad: "amigo" },
-        20: { mot: "terre", trad: "tierra" }
+        politesse: {
+            1:{mot:"bonjour", trad:"hola"},
+            2:{mot:"merci", trad:"gracias"},
+            3:{mot:"au revoir", trad:"adiós"},
+            4:{mot:"s'il vous plaît", trad:"por favor"},
+            5:{mot:"pardon", trad:"perdón"},
+            6:{mot:"excuse-moi", trad:"disculpa"},
+            7:{mot:"de rien", trad:"de nada"},
+            8:{mot:"bienvenue", trad:"bienvenido"},
+            9:{mot:"enchanté", trad:"encantado"},
+            10:{mot:"bonne journée", trad:"buen día"}
+        },
+        vocabulaire: {
+            1:{mot:"le", trad:"el"},
+            2:{mot:"la", trad:"la"},
+            3:{mot:"soleil", trad:"sol"},
+            4:{mot:"lune", trad:"luna"},
+            5:{mot:"livre", trad:"libro"},
+            6:{mot:"voiture", trad:"coche"},
+            7:{mot:"table", trad:"mesa"},
+            8:{mot:"chaise", trad:"silla"},
+            9:{mot:"pomme", trad:"manzana"},
+            10:{mot:"eau", trad:"agua"},
+            11:{mot:"pain", trad:"pan"},
+            12:{mot:"chat", trad:"gato"},
+            13:{mot:"chien", trad:"perro"},
+            14:{mot:"maison", trad:"casa"},
+            15:{mot:"ami", trad:"amigo"},
+            16:{mot:"terre", trad:"tierra"},
+            17:{mot:"un", trad:"un"},
+            18:{mot:"une", trad:"una"},
+            19:{mot:"du", trad:"del"},
+            20:{mot:"de", trad:"de"}
+        },
+        phrases: [
+            {mot:"c'est beau", trad:"es bonito"},
+            {mot:"c'est une maison", trad:"es una casa"},
+            {mot:"j'ai un chat", trad:"tengo un gato"},
+            {mot:"tu es gentil", trad:"eres amable"},
+            {mot:"mon ami", trad:"mi amigo"},
+            {mot:"ta maison", trad:"tu casa"},
+            {mot:"je suis content", trad:"estoy contento"}
+        ]
     },
     "Portugais": {
-        1: { mot: "bonjour", trad: "ola" },
-        2: { mot: "merci", trad: "obrigado" },
-        3: { mot: "au revoir", trad: "adeus" },
-        4: { mot: "comment ca va", trad: "como vai" },
-        5: { mot: "le", trad: "o" },
-        6: { mot: "la", trad: "a" },
-        7: { mot: "soleil", trad: "sol" },
-        8: { mot: "lune", trad: "lua" },
-        9: { mot: "livre", trad: "livro" },
-        10: { mot: "voiture", trad: "carro" },
-        11: { mot: "table", trad: "mesa" },
-        12: { mot: "chaise", trad: "cadeira" },
-        13: { mot: "pomme", trad: "maca" },
-        14: { mot: "eau", trad: "agua" },
-        15: { mot: "pain", trad: "pao" },
-        16: { mot: "chat", trad: "gato" },
-        17: { mot: "chien", trad: "cao" },
-        18: { mot: "maison", trad: "casa" },
-        19: { mot: "ami", trad: "amigo" },
-        20: { mot: "terre", trad: "terra" }
+        politesse: {
+            1:{mot:"bonjour", trad:"olá"},
+            2:{mot:"merci", trad:"obrigado"},
+            3:{mot:"au revoir", trad:"adeus"},
+            4:{mot:"s'il vous plaît", trad:"por favor"},
+            5:{mot:"pardon", trad:"desculpa"},
+            6:{mot:"excuse-moi", trad:"com licença"},
+            7:{mot:"de rien", trad:"de nada"},
+            8:{mot:"bienvenue", trad:"bem-vindo"},
+            9:{mot:"enchanté", trad:"prazer"},
+            10:{mot:"bonne journée", trad:"bom dia"}
+        },
+        vocabulaire: {
+            1:{mot:"le", trad:"o"},
+            2:{mot:"la", trad:"a"},
+            3:{mot:"soleil", trad:"sol"},
+            4:{mot:"lune", trad:"lua"},
+            5:{mot:"livre", trad:"livro"},
+            6:{mot:"voiture", trad:"carro"},
+            7:{mot:"table", trad:"mesa"},
+            8:{mot:"chaise", trad:"cadeira"},
+            9:{mot:"pomme", trad:"maçã"},
+            10:{mot:"eau", trad:"água"},
+            11:{mot:"pain", trad:"pão"},
+            12:{mot:"chat", trad:"gato"},
+            13:{mot:"chien", trad:"cão"},
+            14:{mot:"maison", trad:"casa"},
+            15:{mot:"ami", trad:"amigo"},
+            16:{mot:"terre", trad:"terra"},
+            17:{mot:"un", trad:"um"},
+            18:{mot:"une", trad:"uma"},
+            19:{mot:"du", trad:"do"},
+            20:{mot:"de", trad:"de"}
+        },
+        phrases: [
+            {mot:"c'est beau", trad:"é bonito"},
+            {mot:"c'est une maison", trad:"é uma casa"},
+            {mot:"j'ai un chat", trad:"tenho um gato"},
+            {mot:"tu es gentil", trad:"és simpático"},
+            {mot:"mon ami", trad:"meu amigo"},
+            {mot:"ta maison", trad:"tua casa"},
+            {mot:"je suis content", trad:"estou contente"}
+        ]
     }
 };
+
+function getChapitre(num){
+    if(num <= 10) return {id:1, nom:"La politesse", mult:1, pertemult:1};
+    if(num <= 20) return {id:2, nom:"Le vocabulaire de base", mult:2, pertemult:3};
+    return {id:3, nom:"Former des phrases simples", mult:4, pertemult:9};
+}
+
+function getMaxLecons(){ return 35; }
+
+function dateStr(d){ return d.toISOString().slice(0,10); }
+
+function joursEntre(d1, d2){
+    let t1 = new Date(d1 + "T00:00:00Z").getTime();
+    let t2 = new Date(d2 + "T00:00:00Z").getTime();
+    return Math.round((t2 - t1) / 86400000);
+}
 
 let globalSettings = JSON.parse(localStorage.getItem("maLangueGlobalSettings")) || {
     luckMultiplier: 1,
@@ -363,7 +671,12 @@ let etat = JSON.parse(localStorage.getItem("maLangueEtat")) || {
     infiniteLivesExpiry: 0,
     dernierePerteVie: null,
     coffresOouverts: [],
-    levelSkipPurchases: 0
+    levelSkipPurchases: 0,
+    lastActiveDate: null,
+    streakBroken: false,
+    previousStreakValue: 0,
+    mythicCompleted: [],
+    coffresGratuits: 0
 };
 
 function verifierVies(){
@@ -392,12 +705,53 @@ function verifierVies(){
     }
 }
 
+function verifierSerie(){
+    let aujourdHui = dateStr(new Date());
+    if(!etat.lastActiveDate){ return; }
+    if(etat.lastActiveDate === aujourdHui){ return; }
+    let diff = joursEntre(etat.lastActiveDate, aujourdHui);
+    if(diff <= 1){ return; }
+    let joursManques = diff - 1;
+    let gelsDisponibles = (etat.gelSerie1J || 0) + (etat.gelSerie2J || 0) * 2;
+    if(gelsDisponibles >= joursManques){
+        let aConsommer = joursManques;
+        while(aConsommer > 0 && etat.gelSerie2J > 0){ etat.gelSerie2J--; aConsommer -= 2; }
+        while(aConsommer > 0 && etat.gelSerie1J > 0){ etat.gelSerie1J--; aConsommer -= 1; }
+        let hier = new Date();
+        hier.setUTCDate(hier.getUTCDate() - 1);
+        etat.lastActiveDate = dateStr(hier);
+    } else {
+        if(etat.feu > 0){
+            etat.previousStreakValue = etat.feu;
+            etat.streakBroken = true;
+        }
+        etat.feu = 0;
+        etat.gelSerie1J = 0;
+        etat.gelSerie2J = 0;
+        etat.lastActiveDate = null;
+    }
+    sauvegarder();
+}
+
+function enregistrerActiviteJournaliere(){
+    let aujourdHui = dateStr(new Date());
+    if(etat.lastActiveDate !== aujourdHui){
+        etat.feu = (etat.feu || 0) + 1;
+        etat.lastActiveDate = aujourdHui;
+        etat.streakBroken = false;
+    }
+}
+
 function sauvegarder(){
     if(etat.vies === undefined || etat.vies === null || isNaN(etat.vies)){
         etat.vies = 3;
     }
     etat.coffresOouverts = etat.coffresOouverts || [];
     etat.levelSkipPurchases = etat.levelSkipPurchases || 0;
+    etat.mythicCompleted = etat.mythicCompleted || [];
+    etat.coffresGratuits = etat.coffresGratuits || 0;
+    etat.streakBroken = etat.streakBroken || false;
+    etat.previousStreakValue = etat.previousStreakValue || 0;
     localStorage.setItem("maLangueEtat", JSON.stringify(etat));
     localStorage.setItem("maLangueGlobalSettings", JSON.stringify(globalSettings));
     if(etat.pseudo){
@@ -451,9 +805,17 @@ let currentLessonDiamonds = 10;
 let erreursLecon = 0;
 let shopErrorMsg = "";
 let currentSelectedWords = [];
+let answered = false;
+let pendingAction = null;
+let currentChapitre = null;
+let mythicActive = false;
+let mythicVies = 1;
+let mythicNumLecon = null;
+let mythicTotalQuestions = 0;
 
 window.onload = function(){
     verifierVies();
+    verifierSerie();
     if(!etat.pseudo){
         afficherSetup();
     } else {
@@ -511,11 +873,18 @@ function validerSetup(){
             infiniteLivesExpiry: 0,
             dernierePerteVie: null,
             coffresOouverts: [],
-            levelSkipPurchases: 0
+            levelSkipPurchases: 0,
+            lastActiveDate: null,
+            streakBroken: false,
+            previousStreakValue: 0,
+            mythicCompleted: [],
+            coffresGratuits: 0
         };
     }
     etat.coffresOouverts = etat.coffresOouverts || [];
     etat.levelSkipPurchases = etat.levelSkipPurchases || 0;
+    etat.mythicCompleted = etat.mythicCompleted || [];
+    etat.coffresGratuits = etat.coffresGratuits || 0;
 
     sauvegarder();
     mettreAJourNavigation();
@@ -524,26 +893,43 @@ function validerSetup(){
 
 function afficherAccueil(){
     verifierVies();
+    verifierSerie();
     if(!etat.pseudo){
         afficherSetup();
         return;
     }
     shopErrorMsg = "";
     mettreAJourNavigation();
-    let lessonButtonsHtml = '';
-    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+    let maxLecons = getMaxLecons();
+    let chemin = '';
+    let chapitreAffiche = 0;
+
     for(let i = 1; i <= maxLecons; i++){
-        let isChest = (i % 5 === 0);
-        let chestClass = isChest ? ' chest' : '';
-        let chestIcon = isChest ? '🎁 ' : '';
-        lessonButtonsHtml += `<button class="lesson-btn${chestClass} ${etat.leconActuelle >= i ? '' : 'locked'}" onclick="lancerLecon(${i})">${chestIcon}${i}</button>`;
+        let chap = getChapitre(i);
+        if(chap.id !== chapitreAffiche){
+            chapitreAffiche = chap.id;
+            chemin += `<div class="chapter-banner">Chapitre ${chap.id} : ${chap.nom}</div>`;
+        }
+        let mythicClass = '';
+        if(etat.mythicCompleted && etat.mythicCompleted.includes(i)){
+            mythicClass = chap.id === 1 ? 'mythic-ch1' : (chap.id === 2 ? 'mythic-ch2' : 'mythic-ch3');
+        }
+        let icone = mythicClass ? '👑' : i;
+        chemin += `<button class="lesson-btn ${mythicClass} ${etat.leconActuelle >= i ? '' : 'locked'}" onclick="lancerLecon(${i})">${icone}</button>`;
+
+        if(i % 5 === 0){
+            let unlocked = etat.leconActuelle > i;
+            let opened = etat.coffresOouverts && etat.coffresOouverts.includes(i);
+            chemin += `<button class="chest-node ${!unlocked ? 'locked' : ''} ${opened ? 'opened' : ''}" onclick="ouvrirCoffreNode(${i})">${opened ? '✅' : '🎁'}</button>`;
+        }
     }
 
     const app = document.getElementById("app");
     app.innerHTML = `
         <div class="top">
-            <div>❤️ ${etat.infiniteLivesActive ? 'Infini' : etat.vies + '/3'} | 🔥 ${etat.feu}</div>
+            <div>${etat.infiniteLivesActive ? '❤️ Infini' : '❤️ ' + etat.vies + '/3'}</div>
             <div>👤 ${etat.pseudo}</div>
+            <div>🔥 ${etat.feu}</div>
             <div>💎 ${etat.diamants}</div>
         </div>
         <h1>Ma Langue</h1>
@@ -551,11 +937,11 @@ function afficherAccueil(){
         
         <div class="banner">
             <h3>Bienvenue !</h3>
-            <p>Niveaux progressifs avec des phrases, serie de victoires et coffres mysteres !</p>
+            <p>3 chapitres, des coffres a rarete variable et le Mode Mythique sur les lecons deja terminees !</p>
         </div>
 
         <div class="lesson-path">
-            ${lessonButtonsHtml}
+            ${chemin}
         </div>
     `;
 }
@@ -565,10 +951,10 @@ function ouvrirLecons(){
 }
 
 function obtenirDonneesLecons(num){
-    let motsLangue = dictionnairesMots[etat.langue] || dictionnairesMots["Elmaño"];
-    let allKeys = Object.keys(motsLangue);
+    let chapitre = getChapitre(num);
+    let contenu = contenuLangues[etat.langue] || contenuLangues["Elmaño"];
     let questions = [];
-    
+
     let count = 10;
     if(num === 1) count = 2;
     else if(num === 2) count = 3;
@@ -576,35 +962,25 @@ function obtenirDonneesLecons(num){
     else if(num >= 4 && num <= 20) count = 10;
     else if(num >= 21 && num <= 35) count = 15;
 
-    for(let i = 0; i < count; i++){
-        let usePhrase = (etat.langue === "Elmaño" && num > 5 && i % 2 === 1);
-        
-        if(usePhrase){
-            let phrasesEx = [
-                { mot: "c'est beau", trad: "es bo" },
-                { mot: "c'est une maison", trad: "es uña maìsone" },
-                { mot: "j'ai un cadeau", trad: "a uń cado" },
-                { mot: "tu es magnifique", trad: "tù es mañifìco" },
-                { mot: "mon beau cadeau", trad: "mi bo cado" },
-                { mot: "ta belle maison", trad: "ta ba maìsone" },
-                { mot: "je suis beau", trad: "sùìs bo" }
-            ];
+    if(chapitre.id === 3){
+        let phrasesEx = contenu.phrases;
+        for(let i = 0; i < count; i++){
             let phraseItem = phrasesEx[(num + i) % phrasesEx.length];
             let wrongPhrase1 = phrasesEx[(i + 1) % phrasesEx.length].trad;
             let wrongPhrase2 = phrasesEx[(i + 2) % phrasesEx.length].trad;
-
             let typeEx = i % 3;
+
             if(typeEx === 0){
                 questions.push({
                     type: "choice",
-                    question: 'Comment traduit-on la phrase "' + phraseItem.mot + '" en Elmaño ?',
+                    question: 'Comment traduit-on la phrase "' + phraseItem.mot + '" en ' + etat.langue + ' ?',
                     options: [phraseItem.trad, wrongPhrase1, wrongPhrase2],
                     correct: 0
                 });
             } else if(typeEx === 1){
                 questions.push({
                     type: "input",
-                    question: 'Ecris la traduction exacte de la phrase "' + phraseItem.mot + '" en Elmaño :',
+                    question: 'Ecris la traduction exacte de la phrase "' + phraseItem.mot + '" en ' + etat.langue + ' :',
                     correct: phraseItem.trad
                 });
             } else {
@@ -617,15 +993,20 @@ function obtenirDonneesLecons(num){
                     correct: phraseItem.trad
                 });
             }
-        } else {
+        }
+    } else {
+        let pool = chapitre.id === 1 ? contenu.politesse : contenu.vocabulaire;
+        let allKeys = Object.keys(pool);
+
+        for(let i = 0; i < count; i++){
             let wordKey = (((num - 1) * 2 + i) % allKeys.length) + 1;
-            let item = motsLangue[wordKey] || motsLangue[1];
+            let item = pool[wordKey] || pool[1];
 
             let otherKeys = allKeys.filter(k => k != wordKey);
             let wrongKey1 = otherKeys[i % otherKeys.length];
             let wrongKey2 = otherKeys[(i + 1) % otherKeys.length];
-            let wrong1 = motsLangue[wrongKey1].trad;
-            let wrong2 = motsLangue[wrongKey2].trad;
+            let wrong1 = pool[wrongKey1].trad;
+            let wrong2 = pool[wrongKey2].trad;
 
             let typeEx = (num + i) % 5;
 
@@ -661,13 +1042,21 @@ function obtenirDonneesLecons(num){
                 });
             } else {
                 let motsTrad = item.trad.split(' ');
-                let motsMelanges = [...motsTrad].sort(() => Math.random() - 0.5);
-                questions.push({
-                    type: "reorder",
-                    question: 'Remets les mots dans le bon ordre pour traduire "' + item.mot + '" :',
-                    words: motsMelanges,
-                    correct: item.trad
-                });
+                if(motsTrad.length > 1){
+                    let motsMelanges = [...motsTrad].sort(() => Math.random() - 0.5);
+                    questions.push({
+                        type: "reorder",
+                        question: 'Remets les mots dans le bon ordre pour traduire "' + item.mot + '" :',
+                        words: motsMelanges,
+                        correct: item.trad
+                    });
+                } else {
+                    questions.push({
+                        type: "input",
+                        question: 'Ecris la traduction exacte de "' + item.mot + '" en ' + etat.langue + ' :',
+                        correct: item.trad
+                    });
+                }
             }
         }
     }
@@ -677,30 +1066,103 @@ function obtenirDonneesLecons(num){
 function lancerLecon(num){
     verifierVies();
     if(!etat.infiniteLivesActive && etat.vies <= 0){
-        alert("Tu n'as plus de vies ! Tu dois attendre ou ouvrir un coffre.");
+        alert("Tu n'as plus de vies ! Tu dois attendre ou utiliser la boutique.");
         return;
     }
-    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
     if(num > etat.leconActuelle){
         alert("Cette lecon est verrouillee !");
         return;
     }
+    if(num < etat.leconActuelle){
+        afficherConfirmMythique(num);
+        return;
+    }
+    demarrerLeconNormale(num);
+}
+
+function demarrerLeconNormale(num){
+    mythicActive = false;
     etat.leconEnCours = num;
     currentQuestionIndex = 0;
-    currentLessonDiamonds = 10;
+    currentChapitre = getChapitre(num);
+    currentLessonDiamonds = 10 * currentChapitre.mult;
     erreursLecon = 0;
     currentSelectedWords = [];
-    
+
     let questionsOriginales = obtenirDonneesLecons(num);
     activeQuestions = [...questionsOriginales].sort(() => Math.random() - 0.5);
-    
+
+    afficherQuestion();
+}
+
+function afficherConfirmMythique(num){
+    let questions = obtenirDonneesLecons(num);
+    let coutParQuestion = num === 1 ? 1 : (num === 2 ? 50 : (num === 3 ? 100 : 150));
+    let coutTotal = coutParQuestion * questions.length;
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'mythic-modal';
+    overlay.innerHTML = `
+        <div class="modal-card">
+            <h2 style="color:#ea2b2b;">⚡ Mode Mythique</h2>
+            <p>Tu as deja termine la lecon ${num}. La retenter en <b>Mode Mythique</b> ?</p>
+            <p style="font-size:14px; color:#666;">1 seule vie pour cette tentative. Cout : <b>${coutParQuestion} 💎</b> / question (${questions.length} questions = <b>${coutTotal} 💎</b>). En cas de reussite : grosse recompense en diamants + 1 coffre gratuit !</p>
+            <button class="main-btn" onclick="accepterMythique(${num})">Tenter (${coutTotal} 💎)</button>
+            <button class="main-btn" style="background:#888; border-bottom-color:#666;" onclick="refuserMythique()">Non merci</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function refuserMythique(){
+    const modal = document.getElementById('mythic-modal');
+    if(modal) modal.remove();
+    afficherAccueil();
+}
+
+function accepterMythique(num){
+    const modal = document.getElementById('mythic-modal');
+    let questions = obtenirDonneesLecons(num);
+    let coutParQuestion = num === 1 ? 1 : (num === 2 ? 50 : (num === 3 ? 100 : 150));
+    let coutTotal = coutParQuestion * questions.length;
+
+    if(etat.diamants < coutTotal){
+        if(modal) modal.remove();
+        alert("Pas assez de diamants pour le Mode Mythique ! (" + coutTotal + " 💎 necessaires)");
+        afficherAccueil();
+        return;
+    }
+
+    etat.diamants -= coutTotal;
+    sauvegarder();
+    if(modal) modal.remove();
+
+    mythicActive = true;
+    mythicVies = 1;
+    mythicNumLecon = num;
+    mythicTotalQuestions = questions.length;
+    etat.leconEnCours = num;
+    currentQuestionIndex = 0;
+    currentChapitre = getChapitre(num);
+    erreursLecon = 0;
+    currentSelectedWords = [];
+    activeQuestions = [...questions].sort(() => Math.random() - 0.5);
+
     afficherQuestion();
 }
 
 function afficherQuestion(){
     verifierVies();
     etat.coffresOouverts = etat.coffresOouverts || [];
-    if(!etat.infiniteLivesActive && etat.vies <= 0){
+
+    if(mythicActive){
+        if(mythicVies <= 0){
+            mythicActive = false;
+            etat.leconEnCours = null;
+            afficherAccueil();
+            return;
+        }
+    } else if(!etat.infiniteLivesActive && etat.vies <= 0){
         alert("Tu as perdu toutes tes vies ! Retour a l'accueil.");
         etat.leconEnCours = null;
         afficherAccueil();
@@ -709,34 +1171,47 @@ function afficherQuestion(){
 
     const questions = activeQuestions;
     currentSelectedWords = [];
-    
+    answered = false;
+
     if(currentQuestionIndex >= questions.length){
-        etat.diamants += currentLessonDiamonds;
-        let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
-        let estCoffre = (etat.leconEnCours % 5 === 0);
-        let dejaOuvert = etat.coffresOouverts.includes(etat.leconEnCours);
-
-        if(etat.leconEnCours === etat.leconActuelle && etat.leconActuelle < maxLecons){
-            etat.leconActuelle++;
-            etat.feu++;
-        }
-
-        if(estCoffre && !dejaOuvert){
-            lancerAnimationCoffre();
+        if(mythicActive){
+            let recompense = (10 * currentChapitre.mult) * mythicTotalQuestions;
+            etat.diamants += recompense;
+            etat.coffresGratuits = (etat.coffresGratuits || 0) + 1;
+            etat.mythicCompleted = etat.mythicCompleted || [];
+            if(!etat.mythicCompleted.includes(mythicNumLecon)) etat.mythicCompleted.push(mythicNumLecon);
+            enregistrerActiviteJournaliere();
+            mythicActive = false;
+            etat.leconEnCours = null;
+            sauvegarder();
+            afficherResultatMythique(recompense);
             return;
         }
 
-        terminerLeconAffichage(estCoffre, dejaOuvert, "");
+        etat.diamants += currentLessonDiamonds;
+        let maxLecons = getMaxLecons();
+
+        if(etat.leconEnCours === etat.leconActuelle && etat.leconActuelle < maxLecons){
+            etat.leconActuelle++;
+        }
+        enregistrerActiviteJournaliere();
+        etat.leconEnCours = null;
+        sauvegarder();
+        terminerLeconAffichage();
         return;
     }
 
     const q = questions[currentQuestionIndex];
     const app = document.getElementById("app");
-    
+    let progressPct = Math.round((currentQuestionIndex / questions.length) * 100);
+
     let htmlContent = `
         <div class="top">
-            <div>Vies: ${etat.infiniteLivesActive ? 'Infini' : (etat.vies ?? 3) + '/3'} | 🔥 ${etat.feu}</div>
-            <div><button onclick="acheterSautEnCours()" style="background:white; color:#58cc02; border:none; padding:5px 10px; border-radius:10px; cursor:pointer; font-weight:bold;">Sauter (${etat.freeSkips > 0 ? 'Gratuit' : '⚡'})</button></div>
+            <div>${mythicActive ? '⚡ ' + mythicVies + ' vie' : (etat.infiniteLivesActive ? '❤️ Infini' : '❤️ ' + (etat.vies ?? 3) + '/3')}</div>
+            <div style="flex:1; padding:0 4px; background:transparent; box-shadow:none; min-width:100px;">
+                <div class="progress-wrap"><div class="progress-bar" style="width:${progressPct}%; ${mythicActive ? 'background:#ea2b2b;' : ''}"></div></div>
+            </div>
+            <div>${mythicActive ? '' : `<button onclick="acheterSautEnCours()" style="background:none; color:#4b4b4b; border:none; padding:0; cursor:pointer; font-weight:800;">${etat.freeSkips > 0 ? 'Sauter' : '⚡'}</button>`}</div>
         </div>
         <div class="carte">
             <h2>Question ${currentQuestionIndex + 1} / ${questions.length}</h2>
@@ -750,7 +1225,7 @@ function afficherQuestion(){
         }
         
         optionsMelangees.forEach(item => {
-            htmlContent += `<button class="choice-btn" onclick="verifierChoix(${item.originalIndex}, ${q.correct})">${item.text}</button>`;
+            htmlContent += `<button class="choice-btn" data-original="${item.originalIndex}" onclick="verifierChoix(this, ${item.originalIndex}, ${q.correct}, '${q.options[q.correct].replace(/'/g, "\\'")}')">${item.text}</button>`;
         });
     } else if(q.type === "input"){
         htmlContent += `
@@ -773,7 +1248,50 @@ function afficherQuestion(){
     app.innerHTML = htmlContent;
 }
 
-function lancerAnimationCoffre(){
+function afficherResultatMythique(recompense){
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>⚡ Mythique reussi !</div>
+            <div>+${recompense} 💎</div>
+        </div>
+        <div class="carte">
+            <h2 style="color:#ea2b2b;">Mode Mythique reussi ! 🏆</h2>
+            <p>Tu as gagne <b>${recompense} diamants</b> et <b>1 coffre gratuit</b> a ouvrir dans la boutique !</p>
+            <button class="main-btn" onclick="afficherAccueil()">Continuer</button>
+        </div>
+    `;
+}
+
+function afficherEchecMythique(){
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>Mode Mythique</div>
+            <div>Echec</div>
+        </div>
+        <div class="carte">
+            <h2 style="color:#ea2b2b;">Mode Mythique echoue...</h2>
+            <p>Tu as fait une erreur. Les diamants depenses ne sont pas rembourses. Retente une prochaine fois !</p>
+            <button class="main-btn" onclick="afficherAccueil()">Retour</button>
+        </div>
+    `;
+}
+
+function ouvrirCoffreNode(i){
+    if(etat.leconActuelle <= i){
+        alert("Termine d'abord la lecon " + i + " pour debloquer ce coffre !");
+        return;
+    }
+    etat.coffresOouverts = etat.coffresOouverts || [];
+    if(etat.coffresOouverts.includes(i)){
+        alert("Ce coffre a deja ete ouvert !");
+        return;
+    }
+    lancerAnimationCoffreNode(i);
+}
+
+function lancerAnimationCoffreNode(i){
     const app = document.getElementById("app");
     app.innerHTML = `
         <div class="top">
@@ -788,69 +1306,106 @@ function lancerAnimationCoffre(){
     `;
 
     setTimeout(() => {
-        calculerRecompenseCoffre();
-    }, 1800);
+        finaliserCoffreNode(i);
+    }, 1500);
 }
 
-function calculerRecompenseCoffre(){
+function tirerRarete(){
+    const raretes = [
+        {nom:'Commun', couleur:'#9e9e9e', index:0, poidsBase:60},
+        {nom:'Rare', couleur:'#2f8fff', index:1, poidsBase:25},
+        {nom:'Epique', couleur:'#b24aff', index:2, poidsBase:11},
+        {nom:'Legendaire', couleur:'#ffb300', index:3, poidsBase:4}
+    ];
     let luck = globalSettings.luckMultiplier || 1;
+    let poids = raretes.map((r, i) => i === 0 ? Math.max(5, r.poidsBase - (luck - 1) * 8) : r.poidsBase + (luck - 1) * (i * 3));
+    let total = poids.reduce((a, b) => a + b, 0);
+    let rand = Math.random() * total;
+    let acc = 0;
+    for(let i = 0; i < raretes.length; i++){
+        acc += poids[i];
+        if(rand <= acc) return raretes[i];
+    }
+    return raretes[0];
+}
+
+function appliquerRecompenseCoffre(rarete){
+    let luck = globalSettings.luckMultiplier || 1;
+    let rareteMult = [1, 2, 4, 8][rarete.index] || 1;
     let rand = Math.floor(Math.random() * 10000) + 1;
     let recompenseTexte = "";
 
     if(rand <= 30){
-        let minutes = 15;
+        let minutes = 15 * rareteMult;
         etat.infiniteLivesActive = true;
         etat.infiniteLivesExpiry = Date.now() + (minutes * 60 * 1000);
         recompenseTexte = minutes + " minutes de vies illimitees";
     } else if(rand <= 150){
-        etat.gelSerie1J += 1;
-        recompenseTexte = "1 Gel de serie";
+        let qte = rarete.index + 1;
+        etat.gelSerie1J += qte;
+        recompenseTexte = qte + " Gel(s) de serie";
     } else if(rand <= 500){
-        etat.freeSkips += 1;
-        recompenseTexte = "1 Passe de niveaux";
+        let qte = rarete.index + 1;
+        etat.freeSkips += qte;
+        recompenseTexte = qte + " Passe(s) de niveau";
     } else if(rand <= 2500){
         if(etat.vies < 3){
             etat.vies = Math.min(3, etat.vies + 1);
             recompenseTexte = "1 vie en plus";
         } else {
-            etat.diamants += 15;
-            recompenseTexte = "15 diamants (vies deja au maximum)";
+            let d = Math.round(15 * rareteMult * luck);
+            etat.diamants += d;
+            recompenseTexte = d + " diamants (vies deja au maximum)";
         }
     } else {
         let diamondRand = Math.floor(1000 * (1 - Math.sqrt(Math.random())));
         if(diamondRand < 1) diamondRand = 1;
-        diamondRand *= luck;
+        diamondRand = Math.round(diamondRand * luck * rareteMult);
         etat.diamants += diamondRand;
         recompenseTexte = diamondRand + " diamants";
     }
 
-    etat.coffresOouverts.push(etat.leconEnCours);
-    etat.leconEnCours = null;
-    sauvegarder();
-
-    terminerLeconAffichage(true, false, recompenseTexte);
+    return recompenseTexte;
 }
 
-function terminerLeconAffichage(estCoffre, dejaOuvert, recompenseTexte){
+function finaliserCoffreNode(i){
+    let rarete = tirerRarete();
+    let texte = appliquerRecompenseCoffre(rarete);
+    etat.coffresOouverts = etat.coffresOouverts || [];
+    etat.coffresOouverts.push(i);
+    sauvegarder();
+    afficherResultatCoffre(rarete, texte);
+}
+
+function afficherResultatCoffre(rarete, texte){
+    const app = document.getElementById("app");
+    let pastille = ['⚪','🔵','🟣','🟡'][rarete.index] || '⚪';
+    app.innerHTML = `
+        <div class="top">
+            <div>Coffre ${rarete.nom}</div>
+            <div>${etat.diamants} 💎</div>
+        </div>
+        <div class="carte">
+            <h2 style="color:${rarete.couleur};">Coffre ${rarete.nom} ! ${pastille}</h2>
+            <div class="chest-anim" style="animation:none;">🎁</div>
+            <p>Tu as obtenu : <b>${texte}</b></p>
+            <button class="main-btn" onclick="afficherAccueil()">Continuer</button>
+        </div>
+    `;
+}
+
+function terminerLeconAffichage(){
     let totalQuestions = activeQuestions.length + erreursLecon;
     let pourcentage = totalQuestions > 0 ? Math.round((activeQuestions.length / totalQuestions) * 100) : 100;
 
     const app = document.getElementById("app");
-    let coffreHtml = (estCoffre && recompenseTexte) ? `
-        <div style="background:linear-gradient(135deg, #ffd700, #ff8c00); padding:15px; border-radius:15px; margin-bottom:15px; color:#333;">
-            <h3>Objet sorti du coffre !</h3>
-            <p>Tu as gagne : <b>${recompenseTexte}</b></p>
-        </div>
-    ` : (estCoffre && dejaOuvert ? `<p style="color:#888; font-size:14px;">Coffre deja ouvert pour ce niveau.</p>` : '');
-
     app.innerHTML = `
         <div class="top">
             <div>Resultat</div>
-            <div>+${currentLessonDiamonds} Diamants</div>
+            <div>+${currentLessonDiamonds} 💎</div>
         </div>
         <div class="carte">
             <h2>Lecon terminee !</h2>
-            ${coffreHtml}
             <p>Pourcentage de reussite : <b>${pourcentage}%</b></p>
             <p>Diamants gagnes : <b>+${currentLessonDiamonds}</b></p>
             <button class="main-btn" onclick="afficherAccueil()">Continuer</button>
@@ -860,16 +1415,74 @@ function terminerLeconAffichage(estCoffre, dejaOuvert, recompenseTexte){
 
 function gererErreur(){
     erreursLecon++;
-    currentLessonDiamonds = Math.max(0, currentLessonDiamonds - 1);
-    if(!etat.infiniteLivesActive){
-        etat.vies = (etat.vies ?? 3) - 1;
-        if(etat.vies <= 0){
-            etat.vies = 0;
+    if(mythicActive){
+        mythicVies = 0;
+    } else {
+        let perte = currentChapitre ? currentChapitre.pertemult : 1;
+        currentLessonDiamonds = Math.max(0, currentLessonDiamonds - perte);
+        if(!etat.infiniteLivesActive){
+            etat.vies = (etat.vies ?? 3) - 1;
+            if(etat.vies <= 0){
+                etat.vies = 0;
+            }
+            etat.dernierePerteVie = Date.now();
         }
-        etat.dernierePerteVie = Date.now();
     }
     sauvegarder();
-    alert("Mauvaise reponse ! " + (etat.infiniteLivesActive ? "Vies illimitees" : "-1 vie (Vies: " + etat.vies + "/3)") + " et -1 diamant");
+}
+
+function showFeedback(isCorrect, correctText){
+    const existing = document.getElementById('feedback-banner');
+    if(existing) existing.remove();
+    const app = document.getElementById("app");
+    const banner = document.createElement('div');
+    banner.className = 'feedback-banner ' + (isCorrect ? 'correct' : 'incorrect');
+    banner.id = 'feedback-banner';
+    banner.innerHTML = `
+        <div class="fb-text">
+            <div class="fb-title">${isCorrect ? 'Bien joue ! 🎉' : 'Oups !'}</div>
+            ${!isCorrect && correctText ? `<div class="fb-sub">La bonne reponse : ${correctText}</div>` : ''}
+        </div>
+        <button onclick="continuerApresFeedback()">Continuer</button>
+    `;
+    app.appendChild(banner);
+}
+
+function continuerApresFeedback(){
+    const banner = document.getElementById('feedback-banner');
+    if(banner) banner.remove();
+    if(typeof pendingAction === 'function'){
+        let action = pendingAction;
+        pendingAction = null;
+        action();
+    }
+}
+
+function apresReponse(estCorrect){
+    if(estCorrect){
+        pendingAction = () => { currentQuestionIndex++; afficherQuestion(); };
+        return;
+    }
+    gererErreur();
+    pendingAction = () => {
+        if(mythicActive){
+            if(mythicVies <= 0){
+                mythicActive = false;
+                etat.leconEnCours = null;
+                sauvegarder();
+                afficherEchecMythique();
+                return;
+            }
+            afficherQuestion();
+            return;
+        }
+        if(!etat.infiniteLivesActive && etat.vies <= 0){
+            etat.leconEnCours = null;
+            afficherAccueil();
+            return;
+        }
+        afficherQuestion();
+    };
 }
 
 function selectionnerMotReordre(word, idx){
@@ -884,52 +1497,42 @@ function resetReordre(){
 }
 
 function verifierReordre(correct){
+    if(answered) return;
+    answered = true;
     let reponseUtilisateur = currentSelectedWords.join(' ').trim().toLowerCase();
     let solution = correct.trim().toLowerCase();
-    if(reponseUtilisateur === solution){
-        currentQuestionIndex++;
-        afficherQuestion();
-    } else {
-        gererErreur();
-        if(!etat.infiniteLivesActive && etat.vies <= 0){
-            etat.leconEnCours = null;
-            afficherAccueil();
-            return;
-        }
-        afficherQuestion();
-    }
+    let estCorrect = (reponseUtilisateur === solution);
+    document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    apresReponse(estCorrect);
+    showFeedback(estCorrect, estCorrect ? '' : correct);
 }
 
-function verifierChoix(selected, correct){
-    if(selected === correct){
-        currentQuestionIndex++;
-        afficherQuestion();
+function verifierChoix(btnEl, selected, correct, correctText){
+    if(answered) return;
+    answered = true;
+    document.querySelectorAll('.choice-btn').forEach(b => { b.disabled = true; b.style.pointerEvents = 'none'; });
+    let estCorrect = (selected === correct);
+    if(estCorrect){
+        btnEl.classList.add('is-correct');
     } else {
-        gererErreur();
-        if(!etat.infiniteLivesActive && etat.vies <= 0){
-            etat.leconEnCours = null;
-            afficherAccueil();
-            return;
-        }
-        afficherQuestion();
+        btnEl.classList.add('is-incorrect');
+        const correctBtn = document.querySelector(`.choice-btn[data-original="${correct}"]`);
+        if(correctBtn) correctBtn.classList.add('is-correct');
     }
+    apresReponse(estCorrect);
+    showFeedback(estCorrect, estCorrect ? '' : correctText);
 }
 
 function verifierSaisie(correctAnswer){
-    const userInput = document.getElementById("user-answer").value.trim().toLowerCase();
+    if(answered) return;
+    answered = true;
+    const inputEl = document.getElementById("user-answer");
+    const userInput = inputEl.value.trim().toLowerCase();
     let solution = correctAnswer.trim().toLowerCase();
-    if(userInput === solution){
-        currentQuestionIndex++;
-        afficherQuestion();
-    } else {
-        gererErreur();
-        if(!etat.infiniteLivesActive && etat.vies <= 0){
-            etat.leconEnCours = null;
-            afficherAccueil();
-            return;
-        }
-        afficherQuestion();
-    }
+    let estCorrect = (userInput === solution);
+    inputEl.disabled = true;
+    apresReponse(estCorrect);
+    showFeedback(estCorrect, estCorrect ? '' : correctAnswer);
 }
 
 function getLevelSkipPrice(){
@@ -945,13 +1548,38 @@ function ouvrirBoutique(){
     if(!etat.pseudo) return;
     let skipPrice = getLevelSkipPrice();
     const app = document.getElementById("app");
+
+    let coffresGratuitsHtml = (etat.coffresGratuits && etat.coffresGratuits > 0) ? `
+        <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px; background:#fff8e1; border-radius:12px; padding:10px;">
+            <p><b>🎁 Coffres gratuits</b><br>Tu as <b>${etat.coffresGratuits}</b> coffre(s) gratuit(s) gagne(s) en Mode Mythique !</p>
+            <button class="main-btn" style="padding:10px 20px; font-size:16px; background:#ffc107; color:#333; border-bottom-color:#c79100;" onclick="ouvrirCoffreGratuit()">Ouvrir un coffre</button>
+        </div>
+    ` : '';
+
+    let reparerHtml = (etat.streakBroken && etat.feu === 0) ? `
+        <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px; background:#fff3f3; border-radius:12px; padding:10px;">
+            <p><b>🔧 Reparer ta serie</b><br>Ta serie a ete brisee. Restaure-la a ${etat.previousStreakValue || 1} jour(s).<br>20 000 Diamants</p>
+            <button class="main-btn" style="padding:10px 20px; font-size:16px; background:#ff9800; border-bottom-color:#c77000;" onclick="acheterBoutique('repareSerie')">Reparer</button>
+        </div>
+    ` : '';
+
     app.innerHTML = `
         <div class="top">
             <div>Boutique</div>
-            <div>${etat.diamants} Diamants</div>
+            <div>${etat.diamants} 💎</div>
         </div>
         <div class="carte">
             <h2>Magasin</h2>
+            ${coffresGratuitsHtml}
+            ${reparerHtml}
+            <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
+                <p><b>❤️ +1 Vie</b><br>5 000 Diamants</p>
+                <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('vie1')">Acheter</button>
+            </div>
+            <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
+                <p><b>❤️❤️❤️ Recharge complete de vies</b><br>14 500 Diamants</p>
+                <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('viesFull')">Acheter</button>
+            </div>
             <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
                 <p><b>Gel de serie 1 jour</b><br>25 000 Diamants</p>
                 <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('gel1')">Acheter</button>
@@ -1007,7 +1635,69 @@ function acheterBoutique(article){
             shopErrorMsg = "Pas assez de diamants";
             ouvrirBoutique();
         }
+    } else if(article === 'vie1'){
+        if(etat.vies >= 3 && !etat.infiniteLivesActive){
+            shopErrorMsg = "Tu as deja toutes tes vies !";
+            ouvrirBoutique();
+            return;
+        }
+        if(etat.diamants >= 5000){
+            etat.diamants -= 5000;
+            etat.vies = Math.min(3, etat.vies + 1);
+            sauvegarder();
+            alert("+1 vie ajoutee !");
+            ouvrirBoutique();
+        } else {
+            shopErrorMsg = "Pas assez de diamants";
+            ouvrirBoutique();
+        }
+    } else if(article === 'viesFull'){
+        if(etat.vies >= 3 && !etat.infiniteLivesActive){
+            shopErrorMsg = "Tu as deja toutes tes vies !";
+            ouvrirBoutique();
+            return;
+        }
+        if(etat.diamants >= 14500){
+            etat.diamants -= 14500;
+            etat.vies = 3;
+            sauvegarder();
+            alert("Vies rechargees completement !");
+            ouvrirBoutique();
+        } else {
+            shopErrorMsg = "Pas assez de diamants";
+            ouvrirBoutique();
+        }
+    } else if(article === 'repareSerie'){
+        if(!(etat.streakBroken && etat.feu === 0)){
+            ouvrirBoutique();
+            return;
+        }
+        if(etat.diamants >= 20000){
+            etat.diamants -= 20000;
+            etat.feu = etat.previousStreakValue || 1;
+            etat.streakBroken = false;
+            etat.lastActiveDate = dateStr(new Date());
+            sauvegarder();
+            alert("Serie reparee ! Tu es de retour a " + etat.feu + " jour(s) de serie.");
+            ouvrirBoutique();
+        } else {
+            shopErrorMsg = "Pas assez de diamants";
+            ouvrirBoutique();
+        }
     }
+}
+
+function ouvrirCoffreGratuit(){
+    if(!etat.coffresGratuits || etat.coffresGratuits <= 0){
+        alert("Aucun coffre gratuit disponible.");
+        return;
+    }
+    etat.coffresGratuits--;
+    let rarete = tirerRarete();
+    let texte = appliquerRecompenseCoffre(rarete);
+    sauvegarder();
+    alert("Coffre " + rarete.nom + " ouvert ! Tu as obtenu : " + texte);
+    ouvrirBoutique();
 }
 
 function acheterSautEnCours(){
@@ -1083,7 +1773,7 @@ function validerCode(){
 
 function ouvrirAdmin(){
     const app = document.getElementById("app");
-    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+    let maxLecons = getMaxLecons();
     let isFullAdmin = estAdminTotal(etat.pseudo);
     let hasAPF = (etat.usedCodes && etat.usedCodes.includes("APF"));
     let panelAccessible = isFullAdmin || hasAPF;
@@ -1211,7 +1901,7 @@ function modifierNiveauUtilisateur(){
 }
 
 function adminTousNiveaux(){
-    etat.leconActuelle = etat.langue === "Elmaño" ? 35 : 20;
+    etat.leconActuelle = getMaxLecons();
     sauvegarder();
     alert("Tous les niveaux debloques !");
     afficherAccueil();
@@ -1228,9 +1918,11 @@ function ouvrirInfos(){
         <div class="carte">
             <h2>Mises a jour</h2>
             <p style="text-align:left; font-size:16px; line-height:1.5;">
-                • Paliers de prix dynamiques pour les sauts de niveaux.<br>
-                • Animation d'ouverture de coffre mystere avec recompenses aleatoires.<br>
-                • Conservation stricte des accents.
+                • 3 chapitres : Politesse (1-10), Vocabulaire (11-20), Phrases (21-35).<br>
+                • Chaque chapitre double la recompense en diamants mais triple la perte en cas d'erreur.<br>
+                • Coffres a rarete variable (Commun, Rare, Epique, Legendaire) apres chaque palier de 5 lecons.<br>
+                • Serie quotidienne : joue au moins 1 lecon par jour, sinon utilise un Gel pour la proteger !<br>
+                • Mode Mythique : retente une lecon deja terminee, 1 seule vie, gros risque, grosse recompense.
             </p>
             <button class="main-btn" onclick="afficherAccueil()">Retour</button>
         </div>
@@ -1239,7 +1931,7 @@ function ouvrirInfos(){
 
 function ouvrirProfil(){
     if(!etat.pseudo) return;
-    let maxLecons = etat.langue === "Elmaño" ? 35 : 20;
+    let maxLecons = getMaxLecons();
     const app = document.getElementById("app");
     app.innerHTML = `
         <div class="top">
@@ -1253,8 +1945,10 @@ function ouvrirProfil(){
             <p>Vies : <b>${etat.infiniteLivesActive ? 'Infini' : (etat.vies ?? 3) + '/3'}</b></p>
             <p>Gel de serie (1J) : <b>❄️ ${etat.gelSerie1J}</b></p>
             <p>Gel de serie (2J) : <b>❄️ ${etat.gelSerie2J}</b></p>
-            <p>Serie (Feu) : <b>🔥 ${etat.feu}</b></p>
+            <p>Serie : <b>🔥 ${etat.feu} jour(s)</b></p>
             <p>Sauts gratuits : <b>${etat.freeSkips}</b></p>
+            <p>Coffres gratuits : <b>🎁 ${etat.coffresGratuits || 0}</b></p>
+            <p>Lecons Mythique reussies : <b>👑 ${(etat.mythicCompleted || []).length}</b></p>
             <p>Lecon actuelle : <b>${etat.leconActuelle} / ${maxLecons}</b></p>
             <button class="main-btn" onclick="afficherSetup()">Modifier profil</button>
             <div style="height:10px;"></div>
