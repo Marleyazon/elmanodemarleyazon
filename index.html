@@ -483,13 +483,13 @@ const contenuLangues = {
             1:{mot:"bonjour", trad:"bon jue"},
             2:{mot:"merci", trad:"mercì"},
             3:{mot:"au revoir", trad:"o side"},
-            4:{mot:"s'il vous plaît", trad:"Se íl te plaù"},
+            4:{mot:"s'il vous plaît", trad:"se íl te plaù"},
             5:{mot:"pardon", trad:"pardòn"},
-            6:{mot:"excuse-moi", trad:"Pardòn"},
-            7:{mot:"de rien", trad:"de reñ"},
-            8:{mot:"bienvenue", trad:"Bìenvenidos"},
-            9:{mot:"enchanté", trad:"eñchantò"},
-            10:{mot:"bonne journée", trad:"Ya la bùena jue"}
+            6:{mot:"excuse-moi", trad:"pardòn"},
+            7:{mot:"de rien", trad:"de rìen"},
+            8:{mot:"bienvenue", trad:"bìenvenidos"},
+            9:{mot:"enchanté", trad:"encantado"},
+            10:{mot:"bonne journée", trad:"ya la bùena jue"}
         },
         vocabulaire: {
             1:{mot:"le", trad:"lo"},
@@ -501,7 +501,7 @@ const contenuLangues = {
             7:{mot:"table", trad:"tabla"},
             8:{mot:"chaise", trad:"cadièra"},
             9:{mot:"pomme", trad:"pomà"},
-            10:{mot:"eau", trad:"aigùa"},
+            10:{mot:"eau", trad:"eaù"},
             11:{mot:"pain", trad:"pan"},
             12:{mot:"chat", trad:"gatù"},
             13:{mot:"chien", trad:"kanì"},
@@ -511,7 +511,18 @@ const contenuLangues = {
             17:{mot:"un", trad:"uń"},
             18:{mot:"une", trad:"uña"},
             19:{mot:"du", trad:"del"},
-            20:{mot:"de", trad:"de"}
+            20:{mot:"de", trad:"de"},
+            21:{mot:"lait", trad:"domòn"},
+            22:{mot:"bouteille", trad:"gùrde"},
+            23:{mot:"bouteille d'eau", trad:"gùrdo"},
+            24:{mot:"téléphone", trad:"telefòn"},
+            25:{mot:"télé", trad:"teveliziòn"},
+            26:{mot:"boire", trad:"boìr"},
+            27:{mot:"regarder", trad:"regarßar"},
+            28:{mot:"cassé", trad:"casse"},
+            29:{mot:"alarme", trad:"sonolìdarelo"},
+            30:{mot:"une alarme", trad:"uña alarma"},
+            31:{mot:"un réveil", trad:"uń sonolìdarelo"}
         },
         phrases: [
             {mot:"c'est beau", trad:"es bo"},
@@ -520,7 +531,11 @@ const contenuLangues = {
             {mot:"tu es magnifique", trad:"tù es mañifìco"},
             {mot:"mon beau cadeau", trad:"mi bo cado"},
             {mot:"ta belle maison", trad:"ta ba maìsone"},
-            {mot:"je suis beau", trad:"sùìs bo"}
+            {mot:"je suis beau", trad:"sùìs bo"},
+            {mot:"ceci est du lait", trad:"dá la domòn"},
+            {mot:"je bois", trad:"me boyo"},
+            {mot:"je regarde", trad:"regarßo"},
+            {mot:"tu regardes", trad:"regarßas"}
         ]
     },
     "Espagnol": {
@@ -637,6 +652,58 @@ function joursEntre(d1, d2){
     let t1 = new Date(d1 + "T00:00:00Z").getTime();
     let t2 = new Date(d2 + "T00:00:00Z").getTime();
     return Math.round((t2 - t1) / 86400000);
+}
+
+/* =========================================================
+   MODALES MAISON (remplacent alert/confirm natifs, qui peuvent
+   etre bloques ou lever une exception qui coupe le reste de la
+   fonction dans certains environnements d'apercu mobile/iframe -
+   c'est notamment la cause de plusieurs "bugs" ou rien ne semblait
+   se passer alors que l'action avait bien eu lieu en arriere-plan)
+   ========================================================= */
+function fermerModale(id){
+    const m = document.getElementById(id);
+    if(m) m.remove();
+}
+
+function afficherAlerte(message, callback){
+    fermerModale('modale-alerte');
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'modale-alerte';
+    overlay.innerHTML = `
+        <div class="modal-card">
+            <p>${message}</p>
+            <button class="main-btn" id="modale-alerte-ok">OK</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('modale-alerte-ok').onclick = function(){
+        overlay.remove();
+        if(typeof callback === 'function') callback();
+    };
+}
+
+function afficherConfirmation(message, onConfirm, texteConfirm, texteAnnuler){
+    fermerModale('modale-confirm');
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'modale-confirm';
+    overlay.innerHTML = `
+        <div class="modal-card">
+            <p>${message}</p>
+            <button class="main-btn" id="modale-confirm-oui">${texteConfirm || 'Oui'}</button>
+            <button class="main-btn" style="background:#888; border-bottom-color:#666;" id="modale-confirm-non">${texteAnnuler || 'Annuler'}</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('modale-confirm-oui').onclick = function(){
+        overlay.remove();
+        onConfirm();
+    };
+    document.getElementById('modale-confirm-non').onclick = function(){
+        overlay.remove();
+    };
 }
 
 /* =========================================================
@@ -990,7 +1057,7 @@ function afficherAccueil(){
             mythicClass = 'mythic-failed';
             icone = '⚡';
         }
-        chemin += `<button class="lesson-btn ${mythicClass} ${p.leconActuelle >= i ? '' : 'locked'}" onclick="lancerLecon(${i})">${icone}</button>`;
+        chemin += `<button class="lesson-btn ${mythicClass} ${p.leconActuelle >= i ? '' : 'locked'}" style="margin-left:${[0,50,80,50,0,-50][(i-1)%6]}px;" onclick="lancerLecon(${i})">${icone}</button>`;
 
         if(i % 5 === 0){
             let unlocked = p.leconActuelle > i;
@@ -1037,10 +1104,15 @@ function obtenirDonneesLecons(num){
     if(chapitre.id === 3){
         let phrasesEx = contenu.phrases;
         for(let i = 0; i < count; i++){
-            let phraseItem = phrasesEx[(num + i) % phrasesEx.length];
-            let wrongPhrase1 = phrasesEx[(i + 1) % phrasesEx.length].trad;
-            let wrongPhrase2 = phrasesEx[(i + 2) % phrasesEx.length].trad;
-            let typeEx = i % 3;
+            let phraseIndex = (num + i) % phrasesEx.length;
+            let phraseItem = phrasesEx[phraseIndex];
+            let autresIndices = phrasesEx.map((_, idx) => idx).filter(idx => idx !== phraseIndex && phrasesEx[idx].trad.trim().toLowerCase() !== phraseItem.trad.trim().toLowerCase());
+            if(autresIndices.length < 2){
+                autresIndices = phrasesEx.map((_, idx) => idx).filter(idx => idx !== phraseIndex);
+            }
+            let wrongPhrase1 = phrasesEx[autresIndices[i % autresIndices.length]].trad;
+            let wrongPhrase2 = phrasesEx[autresIndices[(i + 1) % autresIndices.length]].trad;
+            let typeEx = i % 4;
 
             if(typeEx === 0){
                 questions.push({
@@ -1055,7 +1127,7 @@ function obtenirDonneesLecons(num){
                     question: 'Ecris la traduction exacte de la phrase "' + phraseItem.mot + '" en ' + etat.langue + ' :',
                     correct: phraseItem.trad
                 });
-            } else {
+            } else if(typeEx === 2){
                 let motsTrad = phraseItem.trad.split(' ');
                 let motsMelanges = [...motsTrad].sort(() => Math.random() - 0.5);
                 questions.push({
@@ -1063,6 +1135,12 @@ function obtenirDonneesLecons(num){
                     question: 'Remets les mots dans le bon ordre pour traduire "' + phraseItem.mot + '" :',
                     words: motsMelanges,
                     correct: phraseItem.trad
+                });
+            } else {
+                questions.push({
+                    type: "input",
+                    question: 'Cette phrase est en ' + etat.langue + ', ecris-la en francais : "' + phraseItem.trad + '"',
+                    correct: phraseItem.mot
                 });
             }
         }
@@ -1074,13 +1152,16 @@ function obtenirDonneesLecons(num){
             let wordKey = (((num - 1) * 2 + i) % allKeys.length) + 1;
             let item = pool[wordKey] || pool[1];
 
-            let otherKeys = allKeys.filter(k => k != wordKey);
+            let otherKeys = allKeys.filter(k => k != wordKey && pool[k].trad.trim().toLowerCase() !== item.trad.trim().toLowerCase());
+            if(otherKeys.length < 2){
+                otherKeys = allKeys.filter(k => k != wordKey);
+            }
             let wrongKey1 = otherKeys[i % otherKeys.length];
             let wrongKey2 = otherKeys[(i + 1) % otherKeys.length];
             let wrong1 = pool[wrongKey1].trad;
             let wrong2 = pool[wrongKey2].trad;
 
-            let typeEx = (num + i) % 5;
+            let typeEx = (num + i) % 6;
 
             if(typeEx === 0){
                 questions.push({
@@ -1112,7 +1193,7 @@ function obtenirDonneesLecons(num){
                     question: 'Remets les lettres dans le bon ordre pour traduire "' + item.mot + '" : ' + motMelange,
                     correct: item.trad
                 });
-            } else {
+            } else if(typeEx === 4){
                 let motsTrad = item.trad.split(' ');
                 if(motsTrad.length > 1){
                     let motsMelanges = [...motsTrad].sort(() => Math.random() - 0.5);
@@ -1129,6 +1210,12 @@ function obtenirDonneesLecons(num){
                         correct: item.trad
                     });
                 }
+            } else {
+                questions.push({
+                    type: "input",
+                    question: 'Ce mot est en ' + etat.langue + ', ecris-le en francais : "' + item.trad + '"',
+                    correct: item.mot
+                });
             }
         }
     }
@@ -1136,24 +1223,57 @@ function obtenirDonneesLecons(num){
 }
 
 /* =========================================================
-   LANCEMENT DE LECON / MODE MYTHIQUE
+   LANCEMENT DE LECON / CHOIX NORMAL OU MYTHIQUE / MODE MYTHIQUE
    ========================================================= */
 function lancerLecon(num){
     verifierVies();
     if(!etat.infiniteLivesActive && etat.vies <= 0){
-        alert("Tu n'as plus de vies ! Tu dois attendre ou utiliser la boutique.");
+        afficherAlerte("Tu n'as plus de vies ! Tu dois attendre ou utiliser la boutique.");
         return;
     }
     let p = prog();
     if(num > p.leconActuelle){
-        alert("Cette lecon est verrouillee !");
+        afficherAlerte("Cette lecon est verrouillee !");
         return;
     }
     if(num < p.leconActuelle){
-        afficherConfirmMythique(num);
+        afficherChoixRejeu(num);
         return;
     }
     demarrerLeconNormale(num);
+}
+
+/* Lecon deja terminee : on propose desormais les 2 options (rejouer normalement, ou tenter le Mode Mythique si dispo) */
+function afficherChoixRejeu(num){
+    let p = prog();
+    let dejaTente = p.mythicAttempted && p.mythicAttempted.includes(num);
+    fermerModale('rejeu-modal');
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'rejeu-modal';
+    overlay.innerHTML = `
+        <div class="modal-card">
+            <h2>Lecon ${num}</h2>
+            <p>Tu as deja termine cette lecon. Comment veux-tu la refaire ?</p>
+            <button class="main-btn" id="rejeu-normal-btn">Rejouer en mode normal</button>
+            <button class="main-btn" style="background:${dejaTente ? '#e5e5e5' : '#ea2b2b'}; color:${dejaTente ? '#666' : 'white'}; border-bottom-color:${dejaTente ? '#cccccc' : '#b71c1c'}; ${dejaTente ? 'cursor:not-allowed;' : ''}" id="rejeu-mythique-btn" ${dejaTente ? 'disabled' : ''}>⚡ Mode Mythique${dejaTente ? ' (deja tente)' : ''}</button>
+            <button class="main-btn" style="background:#888; border-bottom-color:#666;" id="rejeu-annuler-btn">Annuler</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('rejeu-normal-btn').onclick = function(){
+        overlay.remove();
+        demarrerLeconNormale(num);
+    };
+    document.getElementById('rejeu-annuler-btn').onclick = function(){
+        overlay.remove();
+    };
+    if(!dejaTente){
+        document.getElementById('rejeu-mythique-btn').onclick = function(){
+            overlay.remove();
+            afficherConfirmMythique(num);
+        };
+    }
 }
 
 function demarrerLeconNormale(num){
@@ -1174,8 +1294,7 @@ function demarrerLeconNormale(num){
 function afficherConfirmMythique(num){
     let p = prog();
     if(p.mythicAttempted && p.mythicAttempted.includes(num)){
-        alert("Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !");
-        afficherAccueil();
+        afficherAlerte("Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !", function(){ afficherAccueil(); });
         return;
     }
     let questions = obtenirDonneesLecons(num);
@@ -1207,8 +1326,7 @@ function accepterMythique(num){
     let p = prog();
     if(p.mythicAttempted && p.mythicAttempted.includes(num)){
         if(modal) modal.remove();
-        alert("Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !");
-        afficherAccueil();
+        afficherAlerte("Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !", function(){ afficherAccueil(); });
         return;
     }
     let questions = obtenirDonneesLecons(num);
@@ -1217,8 +1335,7 @@ function accepterMythique(num){
 
     if(etat.diamants < coutTotal){
         if(modal) modal.remove();
-        alert("Pas assez de diamants pour le Mode Mythique ! (" + coutTotal + " 💎 necessaires)");
-        afficherAccueil();
+        afficherAlerte("Pas assez de diamants pour le Mode Mythique ! (" + coutTotal + " 💎 necessaires)", function(){ afficherAccueil(); });
         return;
     }
 
@@ -1258,9 +1375,8 @@ function afficherQuestion(){
             return;
         }
     } else if(!etat.infiniteLivesActive && etat.vies <= 0){
-        alert("Tu as perdu toutes tes vies ! Retour a l'accueil.");
+        afficherAlerte("Tu as perdu toutes tes vies ! Retour a l'accueil.", function(){ afficherAccueil(); });
         p.leconEnCours = null;
-        afficherAccueil();
         return;
     }
 
@@ -1286,7 +1402,7 @@ function afficherQuestion(){
         etat.diamants += appliquerBonusSuperElmano(currentLessonDiamonds);
         let maxLecons = getMaxLecons();
 
-        if(p.leconEnCours === p.leconActuelle && p.leconActuelle < maxLecons){
+        if(p.leconEnCours === p.leconActuelle && p.leconActuelle <= maxLecons){
             p.leconActuelle++;
         }
         enregistrerActiviteJournaliere();
@@ -1367,7 +1483,7 @@ function afficherEchecMythique(){
         </div>
         <div class="carte">
             <h2 style="color:#ea2b2b;">Mode Mythique echoue...</h2>
-            <p>Tu as fait une erreur. Les diamants depenses ne sont pas rembourses, et cette lecon ne pourra plus etre retentee en Mode Mythique. Retente une prochaine fois sur une autre lecon !</p>
+            <p>Tu as fait une erreur. Les diamants depenses ne sont pas rembourses, et cette lecon ne pourra plus etre retentee en Mode Mythique. Tu peux toujours la rejouer en mode normal depuis l'accueil !</p>
             <button class="main-btn" onclick="afficherAccueil()">Retour</button>
         </div>
     `;
@@ -1379,12 +1495,12 @@ function afficherEchecMythique(){
 function ouvrirCoffreNode(i){
     let p = prog();
     if(p.leconActuelle <= i){
-        alert("Termine d'abord la lecon " + i + " pour debloquer ce coffre !");
+        afficherAlerte("Termine d'abord la lecon " + i + " pour debloquer ce coffre !");
         return;
     }
     p.coffresOouverts = p.coffresOouverts || [];
     if(p.coffresOouverts.includes(i)){
-        alert("Ce coffre a deja ete ouvert !");
+        afficherAlerte("Ce coffre a deja ete ouvert !");
         return;
     }
     lancerAnimationCoffreNode(i);
@@ -1555,14 +1671,14 @@ function terminerLeconAffichage(){
     `;
 }
 
-function gererErreur(){
+function gererErreur(erreurMineure){
     erreursLecon++;
     if(mythicActive){
         mythicVies = 0;
     } else {
         let perte = currentChapitre ? currentChapitre.pertemult : 1;
         currentLessonDiamonds = Math.max(0, currentLessonDiamonds - perte);
-        if(!etat.infiniteLivesActive){
+        if(!erreurMineure && !etat.infiniteLivesActive){
             etat.vies = (etat.vies ?? 3) - 1;
             if(etat.vies <= 0){
                 etat.vies = 0;
@@ -1574,7 +1690,8 @@ function gererErreur(){
 }
 
 /* =========================================================
-   FEEDBACK : petite erreur (on retente) vs grosse erreur (on montre la reponse et on avance)
+   FEEDBACK : petite erreur (on retente, pas de perte de vie) vs
+   grosse erreur (on montre la reponse, on avance, on perd 1 vie)
    ========================================================= */
 function levenshtein(a, b){
     const m = a.length, n = b.length;
@@ -1636,7 +1753,7 @@ function apresReponse(estCorrect, erreurMineure){
         pendingAction = () => { currentQuestionIndex++; afficherQuestion(); };
         return;
     }
-    gererErreur();
+    gererErreur(erreurMineure);
     pendingAction = () => {
         let p = prog();
         if(mythicActive){
@@ -1791,7 +1908,7 @@ function acheterBoutique(article){
             etat.diamants -= 25000;
             etat.gelSerie1J++;
             sauvegarder();
-            alert("Achat reussi : Gel 1 jour ajoute !");
+            afficherAlerte("Achat reussi : Gel 1 jour ajoute !");
             ouvrirBoutique();
         } else {
             shopErrorMsg = "Pas assez de diamants";
@@ -1802,7 +1919,7 @@ function acheterBoutique(article){
             etat.diamants -= 45000;
             etat.gelSerie2J++;
             sauvegarder();
-            alert("Achat reussi : Gel 2 jours ajoute !");
+            afficherAlerte("Achat reussi : Gel 2 jours ajoute !");
             ouvrirBoutique();
         } else {
             shopErrorMsg = "Pas assez de diamants";
@@ -1815,7 +1932,7 @@ function acheterBoutique(article){
             etat.freeSkips++;
             etat.levelSkipPurchases = (etat.levelSkipPurchases || 0) + 1;
             sauvegarder();
-            alert("Achat reussi : Saut de niveau ajoute !");
+            afficherAlerte("Achat reussi : Saut de niveau ajoute !");
             ouvrirBoutique();
         } else {
             shopErrorMsg = "Pas assez de diamants";
@@ -1831,7 +1948,7 @@ function acheterBoutique(article){
             etat.diamants -= 5000;
             etat.vies = Math.min(3, etat.vies + 1);
             sauvegarder();
-            alert("+1 vie ajoutee !");
+            afficherAlerte("+1 vie ajoutee !");
             ouvrirBoutique();
         } else {
             shopErrorMsg = "Pas assez de diamants";
@@ -1847,7 +1964,7 @@ function acheterBoutique(article){
             etat.diamants -= 14500;
             etat.vies = 3;
             sauvegarder();
-            alert("Vies rechargees completement !");
+            afficherAlerte("Vies rechargees completement !");
             ouvrirBoutique();
         } else {
             shopErrorMsg = "Pas assez de diamants";
@@ -1864,7 +1981,7 @@ function acheterBoutique(article){
             etat.streakBroken = false;
             etat.lastActiveDate = dateStr(new Date());
             sauvegarder();
-            alert("Serie reparee ! Tu es de retour a " + etat.feu + " jour(s) de serie.");
+            afficherAlerte("Serie reparee ! Tu es de retour a " + etat.feu + " jour(s) de serie.");
             ouvrirBoutique();
         } else {
             shopErrorMsg = "Pas assez de diamants";
@@ -1875,15 +1992,41 @@ function acheterBoutique(article){
 
 function ouvrirCoffreGratuit(){
     if(!etat.coffresGratuits || etat.coffresGratuits <= 0){
-        alert("Aucun coffre gratuit disponible.");
+        afficherAlerte("Aucun coffre gratuit disponible.");
         return;
     }
     etat.coffresGratuits--;
-    let rarete = tirerRarete();
-    let texte = appliquerRecompenseCoffre(rarete);
     sauvegarder();
-    alert("Coffre " + rarete.nom + " ouvert ! Tu as obtenu : " + texte);
-    ouvrirBoutique();
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="top">
+            <div>Coffre Gratuit</div>
+            <div>Ouverture...</div>
+        </div>
+        <div class="carte">
+            <h2>Ouverture du coffre !</h2>
+            <div class="chest-anim">🎁</div>
+            <p>Un objet mystere est en train de sortir...</p>
+        </div>
+    `;
+    setTimeout(() => {
+        let rarete = tirerRarete();
+        let texte = appliquerRecompenseCoffre(rarete);
+        sauvegarder();
+        let pastille = ['⚪','🔵','🟣','🟡'][rarete.index] || '⚪';
+        app.innerHTML = `
+            <div class="top">
+                <div>Coffre ${rarete.nom}</div>
+                <div>${etat.diamants} 💎</div>
+            </div>
+            <div class="carte">
+                <h2 style="color:${rarete.couleur};">Coffre ${rarete.nom} ! ${pastille}</h2>
+                <div class="chest-anim" style="animation:none;">🎁</div>
+                <p>Tu as obtenu : <b>${texte}</b></p>
+                <button class="main-btn" onclick="ouvrirBoutique()">Retour a la boutique</button>
+            </div>
+        `;
+    }, 1200);
 }
 
 function acheterSautEnCours(){
@@ -1891,8 +2034,7 @@ function acheterSautEnCours(){
         etat.freeSkips--;
         sauvegarder();
         currentQuestionIndex++;
-        alert("Question sautee gratuitement !");
-        afficherQuestion();
+        afficherAlerte("Question sautee gratuitement !", function(){ afficherQuestion(); });
         return;
     }
     let price = getLevelSkipPrice();
@@ -1901,10 +2043,9 @@ function acheterSautEnCours(){
         etat.levelSkipPurchases = (etat.levelSkipPurchases || 0) + 1;
         sauvegarder();
         currentQuestionIndex++;
-        alert("Question sautee !");
-        afficherQuestion();
+        afficherAlerte("Question sautee !", function(){ afficherQuestion(); });
     } else {
-        alert("Pas assez de diamants");
+        afficherAlerte("Pas assez de diamants");
     }
 }
 
@@ -1924,7 +2065,7 @@ function ouvrirParametres(){
             <h2>Langue d'apprentissage</h2>
             <p>Chaque langue a sa propre progression independante.</p>
             <select id="langue-active-select">${optionsLangues}</select>
-            <button class="main-btn" onclick="changerLangueActive()">Changer de langue</button>
+            <button class="main-btn" id="changer-langue-btn">Changer de langue</button>
         </div>
         <div class="carte">
             <h2>Codes et Options</h2>
@@ -1936,25 +2077,44 @@ function ouvrirParametres(){
             <button class="main-btn" style="background:#888; margin-top:10px;" onclick="afficherAccueil()">Retour</button>
         </div>
     `;
+    document.getElementById('changer-langue-btn').onclick = changerLangueActive;
 }
 
 function changerLangueActive(){
-    let val = document.getElementById("langue-active-select").value;
-    etat.langue = val;
-    sauvegarder();
-    alert("Langue active : " + val);
-    afficherAccueil();
+    try {
+        let selectEl = document.getElementById("langue-active-select");
+        if(!selectEl){
+            afficherAlerte("Impossible de trouver le selecteur de langue.");
+            return;
+        }
+        let val = selectEl.value;
+        if(!LANGUES.includes(val)){
+            afficherAlerte("Langue invalide.");
+            return;
+        }
+        if(val === etat.langue){
+            afficherAlerte("Tu apprends deja " + val + " !");
+            return;
+        }
+        etat.langue = val;
+        sauvegarder();
+        mettreAJourNavigation();
+        afficherAlerte("Langue active : " + val, function(){ afficherAccueil(); });
+    } catch(err){
+        console.error("Erreur lors du changement de langue :", err);
+        afficherAlerte("Une erreur est survenue pendant le changement de langue. Reessaie.");
+    }
 }
 
 function validerCode(){
     const code = document.getElementById("code-input").value.trim().toUpperCase();
     if(!code){
-        alert("Entre un code valide !");
+        afficherAlerte("Entre un code valide !");
         return;
     }
     etat.usedCodes = etat.usedCodes || [];
     if(etat.usedCodes.includes(code)){
-        alert("Ce code a deja ete utilise !");
+        afficherAlerte("Ce code a deja ete utilise !");
         return;
     }
 
@@ -1962,16 +2122,14 @@ function validerCode(){
         etat.freeSkips++;
         etat.usedCodes.push(code);
         sauvegarder();
-        alert("Code valide ! Saut gratuit gagne.");
-        ouvrirParametres();
+        afficherAlerte("Code valide ! Saut gratuit gagne.", function(){ ouvrirParametres(); });
     } else if(code === "APF"){
         etat.usedCodes.push(code);
         sauvegarder();
-        alert("Code APF valide ! Panel admin debloque.");
         mettreAJourNavigation();
-        ouvrirAdmin();
+        afficherAlerte("Code APF valide ! Panel admin debloque.", function(){ ouvrirAdmin(); });
     } else {
-        alert("Code invalide !");
+        afficherAlerte("Code invalide !");
     }
 }
 
@@ -1987,8 +2145,7 @@ function ouvrirAdmin(){
     let panelAccessible = isFullAdmin || hasAPF;
 
     if(!panelAccessible){
-        alert("Acces refuse !");
-        afficherAccueil();
+        afficherAlerte("Acces refuse !", function(){ afficherAccueil(); });
         return;
     }
 
@@ -2042,19 +2199,18 @@ function changerLuck(){
     let val = parseInt(document.getElementById("admin-luck").value);
     globalSettings.luckMultiplier = val;
     sauvegarder();
-    alert("Multiplicateur de chance mis a jour : x" + val);
+    afficherAlerte("Multiplicateur de chance mis a jour : x" + val);
 }
 
 function ajouterDiamantsPerso(){
     let val = parseInt(document.getElementById("admin-add-diam").value);
     if(isNaN(val) || val <= 0){
-        alert("Entre un nombre valide de diamants !");
+        afficherAlerte("Entre un nombre valide de diamants !");
         return;
     }
     etat.diamants += val;
     sauvegarder();
-    alert("Ajout de " + val + " diamants reussi !");
-    ouvrirAdmin();
+    afficherAlerte("Ajout de " + val + " diamants reussi !", function(){ ouvrirAdmin(); });
 }
 
 function envoyerMessageGlobal(){
@@ -2063,7 +2219,7 @@ function envoyerMessageGlobal(){
     globalSettings.globalMsgText = txt;
     globalSettings.globalMsgTime = Date.now();
     sauvegarder();
-    alert("Message diffuse a tout le monde pour 5 secondes !");
+    afficherAlerte("Message diffuse a tout le monde pour 5 secondes !");
 }
 
 function toggleViesInfiniAdmin(){
@@ -2075,8 +2231,9 @@ function toggleViesInfiniAdmin(){
         etat.infiniteLivesExpiry = 0;
     }
     sauvegarder();
-    alert("Vies illimitees " + (etat.infiniteLivesActive ? "activees" : "desactivees"));
+    mettreAJourNavigation();
     ouvrirAdmin();
+    afficherAlerte("Vies illimitees " + (etat.infiniteLivesActive ? "activees" : "desactivees"));
 }
 
 function toggleViesInfiniAutre(){
@@ -2084,7 +2241,7 @@ function toggleViesInfiniAutre(){
     let pseudoCible = document.getElementById("admin-target-user").value.trim();
     users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
     if(!pseudoCible || !users[pseudoCible]){
-        alert("Utilisateur introuvable !");
+        afficherAlerte("Utilisateur introuvable !");
         return;
     }
     let targetEtat = users[pseudoCible];
@@ -2096,7 +2253,7 @@ function toggleViesInfiniAutre(){
     }
     users[pseudoCible] = targetEtat;
     localStorage.setItem("maLangueUsers", JSON.stringify(users));
-    alert("Vies illimitees pour " + pseudoCible + " : " + (targetEtat.infiniteLivesActive ? "Actives" : "Desactives"));
+    afficherAlerte("Vies illimitees pour " + pseudoCible + " : " + (targetEtat.infiniteLivesActive ? "Actives" : "Desactivees"));
 }
 
 function modifierNiveauUtilisateur(){
@@ -2105,7 +2262,7 @@ function modifierNiveauUtilisateur(){
     let niv = parseInt(document.getElementById("admin-level-val").value);
     users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
     if(!pseudoCible || !users[pseudoCible]){
-        alert("Utilisateur introuvable !");
+        afficherAlerte("Utilisateur introuvable !");
         return;
     }
     let targetEtat = users[pseudoCible];
@@ -2114,14 +2271,13 @@ function modifierNiveauUtilisateur(){
     targetEtat.progression[langueCible].leconActuelle = Math.max(1, niv);
     users[pseudoCible] = targetEtat;
     localStorage.setItem("maLangueUsers", JSON.stringify(users));
-    alert("Niveau de " + pseudoCible + " (" + langueCible + ") mis a jour a : " + niv);
+    afficherAlerte("Niveau de " + pseudoCible + " (" + langueCible + ") mis a jour a : " + niv);
 }
 
 function adminTousNiveaux(){
     prog().leconActuelle = getMaxLecons();
     sauvegarder();
-    alert("Tous les niveaux debloques !");
-    afficherAccueil();
+    afficherAlerte("Tous les niveaux debloques !", function(){ afficherAccueil(); });
 }
 
 /* =========================================================
@@ -2143,8 +2299,9 @@ function ouvrirInfos(){
                 • Chaque langue possede sa propre progression independante.<br>
                 • Coffres a rarete variable (Commun 75%, Rare 20%, Epique 4.95%, Legendaire 0.05%) apres chaque palier de 5 lecons.<br>
                 • Serie quotidienne : joue au moins 1 lecon par jour, sinon utilise un Gel pour la proteger !<br>
-                • Mode Mythique : retente une lecon deja terminee, 1 seule vie, une seule tentative possible par lecon, gros risque, grosse recompense.<br>
-                • Petite erreur : tu peux reessayer la question. Grosse erreur : la bonne reponse est revelee et tu passes a la suivante.
+                • Une lecon deja terminee peut etre rejouee en mode normal a tout moment, ou tentee une seule fois en Mode Mythique (1 seule vie, gros risque, grosse recompense).<br>
+                • Petite erreur (faute de frappe proche) : la question recommence, sans perte de vie. Grosse erreur : la bonne reponse est revelee, tu passes a la suivante et tu perds 1 vie.<br>
+                • Nouveau type d'exercice : le mot ou la phrase est ecrit dans la langue apprise, a toi de le retraduire en francais !
             </p>
             <button class="main-btn" onclick="afficherAccueil()">Retour</button>
         </div>
@@ -2236,13 +2393,14 @@ function validerRenommage(){
     users[nouveau] = etat;
     localStorage.setItem("maLangueUsers", JSON.stringify(users));
     sauvegarder();
-    alert("Pseudo change avec succes !");
-    mettreAJourNavigation();
-    ouvrirProfil();
+    afficherAlerte("Pseudo change avec succes !", function(){
+        mettreAJourNavigation();
+        ouvrirProfil();
+    });
 }
 
 function reinitialiserDonnees(){
-    if(confirm("Veux-tu vraiment reinitialiser ? Cette action supprime ton compte.")){
+    afficherConfirmation("Veux-tu vraiment reinitialiser ? Cette action supprime ton compte.", function(){
         users = JSON.parse(localStorage.getItem("maLangueUsers")) || {};
         if(etat.pseudo && users[etat.pseudo]){
             delete users[etat.pseudo];
@@ -2252,7 +2410,7 @@ function reinitialiserDonnees(){
         localStorage.removeItem("maLangueEtat");
         mettreAJourNavigation();
         afficherSetup();
-    }
+    }, "Reinitialiser", "Annuler");
 }
 </script>
 
