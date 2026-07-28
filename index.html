@@ -383,6 +383,14 @@ button.main-btn:active{
     font-size:16px;
 }
 
+.pseudo-super{
+    background:linear-gradient(90deg,#2f8fff,#ffffff);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    font-weight:900;
+}
+
 .bottom{
     position:fixed;
     bottom:0;
@@ -462,6 +470,18 @@ button.main-btn:active{
     font-size: 80px;
     animation: shake 0.5s infinite;
     margin: 20px 0;
+}
+
+@keyframes pubPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.pub-emoji {
+    font-size: 50px;
+    margin: 20px 0;
+    animation: pubPulse 1.1s ease-in-out infinite;
 }
 </style>
 </head>
@@ -757,6 +777,8 @@ function nouvelEtat(pseudo, motDePasse, langue){
         regenBoostActive: false,
         regenBoostSingleActive: false,
         superElmanoExpiry: 0,
+        abonnementSuperExpiry: 0,
+        abonnementSuperAdsWatched: 0,
         progression: progressionParDefaut()
     };
 }
@@ -783,6 +805,8 @@ function migrerEtat(e){
     e.regenBoostActive = e.regenBoostActive || false;
     e.regenBoostSingleActive = e.regenBoostSingleActive || false;
     e.superElmanoExpiry = e.superElmanoExpiry || 0;
+    e.abonnementSuperExpiry = e.abonnementSuperExpiry || 0;
+    e.abonnementSuperAdsWatched = e.abonnementSuperAdsWatched || 0;
     e.motDePasse = e.motDePasse || "";
     e.coffresGratuits = e.coffresGratuits || 0;
     e.streakBroken = e.streakBroken || false;
@@ -808,28 +832,57 @@ function appliquerBonusSuperElmano(montant){
     return montant;
 }
 
+function aAbonnementSuper(){
+    return !!(etat.abonnementSuperExpiry && Date.now() < etat.abonnementSuperExpiry);
+}
+
+function viesMax(){
+    return aAbonnementSuper() ? 6 : 3;
+}
+
+function prixAvecReduc(prix){
+    return aAbonnementSuper() ? Math.round(prix / 2) : prix;
+}
+
+function activerAbonnementSuper(){
+    let base = (etat.abonnementSuperExpiry && etat.abonnementSuperExpiry > Date.now()) ? etat.abonnementSuperExpiry : Date.now();
+    etat.abonnementSuperExpiry = base + 30 * 24 * 60 * 60 * 1000;
+}
+
+function pseudoAffiche(){
+    if(aAbonnementSuper()){
+        return `<span style="background:linear-gradient(90deg,#2f8fff,#ffffff); -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:900;">${etat.pseudo}</span>`;
+    }
+    return etat.pseudo;
+}
+
 function verifierVies(){
     if(etat.vies === undefined || etat.vies === null || isNaN(etat.vies)){
         etat.vies = 3;
+    }
+    if(etat.vies > viesMax()){
+        etat.vies = viesMax();
     }
     if(etat.infiniteLivesActive){
         if(Date.now() > etat.infiniteLivesExpiry){
             etat.infiniteLivesActive = false;
         } else {
-            etat.vies = 3;
+            etat.vies = viesMax();
             return;
         }
     }
 
-    if(etat.vies < 3 && etat.dernierePerteVie){
+    if(etat.vies < viesMax() && etat.dernierePerteVie){
         let maintenant = Date.now();
         let changement = false;
-        while(etat.vies < 3 && etat.dernierePerteVie){
+        while(etat.vies < viesMax() && etat.dernierePerteVie){
             let intervalCourant;
             if(etat.regenBoostSingleActive){
                 intervalCourant = 40 * 60 * 1000;
             } else if(etat.regenBoostActive){
                 intervalCourant = 60 * 60 * 1000;
+            } else if(aAbonnementSuper()){
+                intervalCourant = 80 * 60 * 1000;
             } else {
                 intervalCourant = 2 * 60 * 60 * 1000;
             }
@@ -844,7 +897,7 @@ function verifierVies(){
                 break;
             }
         }
-        if(etat.vies >= 3){
+        if(etat.vies >= viesMax()){
             etat.dernierePerteVie = null;
             etat.regenBoostActive = false;
         }
@@ -923,6 +976,16 @@ function estAdminTotal(pseudo){
     return p === "MarleyazonAdmin51_Elmaño" || p === "MarleyazonAdmin51_Elmano" || p === "MarleyaznAdmin51_Elmaño" || p === "MarleyaznAdmin51_Elmano";
 }
 
+function masquerNav(){
+    const nav = document.getElementById('bottom-nav');
+    if(nav) nav.style.display = 'none';
+}
+
+function afficherNav(){
+    const nav = document.getElementById('bottom-nav');
+    if(nav) nav.style.display = 'flex';
+}
+
 function mettreAJourNavigation(){
     verifierVies();
     const nav = document.getElementById("bottom-nav");
@@ -954,6 +1017,7 @@ let mythicActive = false;
 let mythicVies = 1;
 let mythicNumLecon = null;
 let mythicTotalQuestions = 0;
+let superErreurPardonneeUtilisee = false;
 
 window.onload = function(){
     if(etat.pseudo){
@@ -1029,6 +1093,7 @@ function seDeconnecter(){
    ACCUEIL
    ========================================================= */
 function afficherAccueil(){
+    afficherNav();
     verifierVies();
     verifierSerie();
     if(!etat.pseudo){
@@ -1058,7 +1123,7 @@ function afficherAccueil(){
             icone = '⚡';
         }
         chemin += `<button class="lesson-btn ${mythicClass} ${p.leconActuelle >= i ? '' : 'locked'}" onclick="lancerLecon(${i})">${icone}</button>`;
-        
+
         if(i % 5 === 0){
             let unlocked = p.leconActuelle > i;
             let opened = p.coffresOouverts && p.coffresOouverts.includes(i);
@@ -1069,8 +1134,8 @@ function afficherAccueil(){
     const app = document.getElementById("app");
     app.innerHTML = `
         <div class="top">
-            <div>${etat.infiniteLivesActive ? '❤️ Infini' : '❤️ ' + etat.vies + '/3'}</div>
-            <div>👤 ${etat.pseudo}</div>
+            <div>${etat.infiniteLivesActive ? '❤️ Infini' : '❤️ ' + etat.vies + '/' + viesMax()}</div>
+            <div>👤 ${pseudoAffiche()}</div>
             <div>🔥 ${etat.feu}</div>
             <div>💎 ${etat.diamants}</div>
         </div>
@@ -1244,9 +1309,21 @@ function lancerLecon(num){
 }
 
 /* Lecon deja terminee : on propose desormais les 2 options (rejouer normalement, ou tenter le Mode Mythique si dispo) */
+/* Le Mode Mythique est verrouille pour une lecon donnee si :
+   - elle a deja ete reussie en Mythique (quel que soit l'abonnement)
+   - OU si elle a deja ete tentee ET que le joueur n'a pas ElmañoSuper
+   (avec ElmañoSuper, les echecs peuvent etre retentes a l'infini, mais une reussite verrouille definitivement) */
+function mythiqueBloque(num){
+    let p = prog();
+    if(p.mythicCompleted && p.mythicCompleted.includes(num)) return true;
+    if(!aAbonnementSuper() && p.mythicAttempted && p.mythicAttempted.includes(num)) return true;
+    return false;
+}
+
 function afficherChoixRejeu(num){
     let p = prog();
-    let dejaTente = p.mythicAttempted && p.mythicAttempted.includes(num);
+    let dejaTente = mythiqueBloque(num);
+    let dejaReussi = p.mythicCompleted && p.mythicCompleted.includes(num);
     fermerModale('rejeu-modal');
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -1256,7 +1333,7 @@ function afficherChoixRejeu(num){
             <h2>Lecon ${num}</h2>
             <p>Tu as deja termine cette lecon. Comment veux-tu la refaire ?</p>
             <button class="main-btn" id="rejeu-normal-btn">Rejouer en mode normal</button>
-            <button class="main-btn" style="background:${dejaTente ? '#e5e5e5' : '#ea2b2b'}; color:${dejaTente ? '#666' : 'white'}; border-bottom-color:${dejaTente ? '#cccccc' : '#b71c1c'}; ${dejaTente ? 'cursor:not-allowed;' : ''}" id="rejeu-mythique-btn" ${dejaTente ? 'disabled' : ''}>⚡ Mode Mythique${dejaTente ? ' (deja tente)' : ''}</button>
+            <button class="main-btn" style="background:${dejaTente ? '#e5e5e5' : '#ea2b2b'}; color:${dejaTente ? '#666' : 'white'}; border-bottom-color:${dejaTente ? '#cccccc' : '#b71c1c'}; ${dejaTente ? 'cursor:not-allowed;' : ''}" id="rejeu-mythique-btn" ${dejaTente ? 'disabled' : ''}>⚡ Mode Mythique${dejaReussi ? ' (deja reussie 👑)' : (dejaTente ? ' (deja tente)' : (aAbonnementSuper() ? ' (illimite ⭐)' : ''))}</button>
             <button class="main-btn" style="background:#888; border-bottom-color:#666;" id="rejeu-annuler-btn">Annuler</button>
         </div>
     `;
@@ -1278,6 +1355,7 @@ function afficherChoixRejeu(num){
 
 function demarrerLeconNormale(num){
     mythicActive = false;
+    superErreurPardonneeUtilisee = false;
     prog().leconEnCours = num;
     currentQuestionIndex = 0;
     currentChapitre = getChapitre(num);
@@ -1293,13 +1371,15 @@ function demarrerLeconNormale(num){
 
 function afficherConfirmMythique(num){
     let p = prog();
-    if(p.mythicAttempted && p.mythicAttempted.includes(num)){
-        afficherAlerte("Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !", function(){ afficherAccueil(); });
+    if(mythiqueBloque(num)){
+        let dejaReussi = p.mythicCompleted && p.mythicCompleted.includes(num);
+        afficherAlerte(dejaReussi ? "Tu as deja reussi le Mode Mythique de cette lecon, elle ne peut plus etre retentee en Mythique !" : "Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !", function(){ afficherAccueil(); });
         return;
     }
     let questions = obtenirDonneesLecons(num);
     let coutParQuestion = num === 1 ? 1 : (num === 2 ? 50 : (num === 3 ? 100 : 150));
     let coutTotal = coutParQuestion * questions.length;
+    let texteLimite = aAbonnementSuper() ? "1 seule vie pour cette tentative. Grace a ElmañoSuper, tu peux retenter le Mode Mythique autant de fois que tu veux !" : "1 seule vie pour cette tentative, et une seule tentative possible au total (reussite ou echec).";
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.id = 'mythic-modal';
@@ -1307,7 +1387,7 @@ function afficherConfirmMythique(num){
         <div class="modal-card">
             <h2 style="color:#ea2b2b;">⚡ Mode Mythique</h2>
             <p>Tu as deja termine la lecon ${num}. La retenter en <b>Mode Mythique</b> ?</p>
-            <p style="font-size:14px; color:#666;">1 seule vie pour cette tentative, et une seule tentative possible au total (reussite ou echec). Cout : <b>${coutParQuestion} 💎</b> / question (${questions.length} questions = <b>${coutTotal} 💎</b>). En cas de reussite : grosse recompense en diamants + 1 coffre gratuit !</p>
+            <p style="font-size:14px; color:#666;">${texteLimite} Cout : <b>${coutParQuestion} 💎</b> / question (${questions.length} questions = <b>${coutTotal} 💎</b>). En cas de reussite : grosse recompense en diamants + 1 coffre gratuit !</p>
             <button class="main-btn" onclick="accepterMythique(${num})">Tenter (${coutTotal} 💎)</button>
             <button class="main-btn" style="background:#888; border-bottom-color:#666;" onclick="refuserMythique()">Non merci</button>
         </div>
@@ -1324,9 +1404,10 @@ function refuserMythique(){
 function accepterMythique(num){
     const modal = document.getElementById('mythic-modal');
     let p = prog();
-    if(p.mythicAttempted && p.mythicAttempted.includes(num)){
+    if(mythiqueBloque(num)){
+        let dejaReussi = p.mythicCompleted && p.mythicCompleted.includes(num);
         if(modal) modal.remove();
-        afficherAlerte("Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !", function(){ afficherAccueil(); });
+        afficherAlerte(dejaReussi ? "Tu as deja reussi le Mode Mythique de cette lecon, elle ne peut plus etre retentee en Mythique !" : "Tu as deja utilise ta seule tentative en Mode Mythique pour cette lecon !", function(){ afficherAccueil(); });
         return;
     }
     let questions = obtenirDonneesLecons(num);
@@ -1341,7 +1422,7 @@ function accepterMythique(num){
 
     etat.diamants -= coutTotal;
     p.mythicAttempted = p.mythicAttempted || [];
-    p.mythicAttempted.push(num);
+    if(!p.mythicAttempted.includes(num)) p.mythicAttempted.push(num);
     sauvegarder();
     if(modal) modal.remove();
 
@@ -1363,6 +1444,7 @@ function accepterMythique(num){
    AFFICHAGE DES QUESTIONS
    ========================================================= */
 function afficherQuestion(){
+    masquerNav();
     verifierVies();
     let p = prog();
     p.coffresOouverts = p.coffresOouverts || [];
@@ -1418,7 +1500,7 @@ function afficherQuestion(){
 
     let htmlContent = `
         <div class="top">
-            <div>${mythicActive ? '⚡ ' + mythicVies + ' vie' : (etat.infiniteLivesActive ? '❤️ Infini' : '❤️ ' + (etat.vies ?? 3) + '/3')}</div>
+            <div>${mythicActive ? '⚡ ' + mythicVies + ' vie' : (etat.infiniteLivesActive ? '❤️ Infini' : '❤️ ' + (etat.vies ?? 3) + '/' + viesMax())}</div>
             <div style="flex:1; padding:0 4px; background:transparent; box-shadow:none; min-width:100px;">
                 <div class="progress-wrap"><div class="progress-bar" style="width:${progressPct}%; ${mythicActive ? 'background:#ea2b2b;' : ''}"></div></div>
             </div>
@@ -1460,6 +1542,7 @@ function afficherQuestion(){
 }
 
 function afficherResultatMythique(recompense){
+    afficherNav();
     const app = document.getElementById("app");
     app.innerHTML = `
         <div class="top">
@@ -1475,6 +1558,7 @@ function afficherResultatMythique(recompense){
 }
 
 function afficherEchecMythique(){
+    afficherNav();
     const app = document.getElementById("app");
     app.innerHTML = `
         <div class="top">
@@ -1503,26 +1587,79 @@ function ouvrirCoffreNode(i){
         afficherAlerte("Ce coffre a deja ete ouvert !");
         return;
     }
-    lancerAnimationCoffreNode(i);
+    demarrerCoffreInteractif(i, false);
 }
 
-function lancerAnimationCoffreNode(i){
+/* =========================================================
+   OUVERTURE INTERACTIVE DU COFFRE : 3 essais pour ameliorer
+   la rarete affichee, puis un dernier appui pour l'ouvrir.
+   La rarete ne peut jamais redescendre : chaque nouvel essai
+   ne peut qu'egaler ou depasser la meilleure rarete obtenue.
+   ========================================================= */
+let coffreInteractif = null;
+
+function comparerRarete(a, b){
+    return a.index >= b.index ? a : b;
+}
+
+function demarrerCoffreInteractif(num, estGratuit){
+    coffreInteractif = {
+        num: num,
+        estGratuit: estGratuit,
+        essaisRestants: 3,
+        rarete: tirerRarete()
+    };
+    afficherCoffreInteractif();
+}
+
+function afficherCoffreInteractif(){
+    let c = coffreInteractif;
+    if(!c) return;
     const app = document.getElementById("app");
+    let pastille = ['⚪','🔵','🟣','🟡'][c.rarete.index] || '⚪';
+    let dots = '';
+    for(let k = 0; k < 3; k++){
+        dots += `<span style="display:inline-block; width:16px; height:16px; border-radius:50%; margin:0 5px; background:${k < c.essaisRestants ? '#ffc800' : '#e5e5e5'};"></span>`;
+    }
     app.innerHTML = `
         <div class="top">
-            <div>Coffre Mystere</div>
-            <div>Ouverture...</div>
+            <div>${c.estGratuit ? 'Coffre Gratuit' : 'Coffre Mystere'}</div>
+            <div>${etat.diamants} 💎</div>
         </div>
         <div class="carte">
-            <h2>Ouverture du coffre !</h2>
-            <div class="chest-anim">🎁</div>
-            <p>Un objet mystere est en train de sortir...</p>
+            <h2 style="color:${c.rarete.couleur};">${pastille} ${c.rarete.nom}</h2>
+            <div class="chest-anim" style="animation:none; cursor:pointer;" onclick="tapCoffreInteractif()">🎁</div>
+            <div style="margin-bottom:15px;">${dots}</div>
+            <p style="font-size:15px; color:#666;">${c.essaisRestants > 0 ? 'Appuie sur le coffre pour retenter ta chance (' + c.essaisRestants + ' essai(s) restant(s)) - la rarete ne peut jamais redescendre !' : "Appuie une derniere fois sur le coffre pour l'ouvrir !"}</p>
         </div>
     `;
+}
 
-    setTimeout(() => {
-        finaliserCoffreNode(i);
-    }, 1500);
+function tapCoffreInteractif(){
+    let c = coffreInteractif;
+    if(!c) return;
+    if(c.essaisRestants > 0){
+        c.essaisRestants--;
+        let nouvelleRarete = tirerRarete();
+        c.rarete = comparerRarete(c.rarete, nouvelleRarete);
+        afficherCoffreInteractif();
+    } else {
+        finaliserCoffreInteractif();
+    }
+}
+
+function finaliserCoffreInteractif(){
+    let c = coffreInteractif;
+    if(!c) return;
+    let texte = appliquerRecompenseCoffre(c.rarete);
+    if(!c.estGratuit){
+        let p = prog();
+        p.coffresOouverts = p.coffresOouverts || [];
+        if(!p.coffresOouverts.includes(c.num)) p.coffresOouverts.push(c.num);
+    }
+    sauvegarder();
+    afficherResultatCoffre(c.rarete, texte, c.estGratuit);
+    coffreInteractif = null;
 }
 
 /* Probabilites cibles : Commun 75% / Rare 20% / Epique 4.95% / Legendaire 0.05% */
@@ -1591,7 +1728,7 @@ function appliquerRecompenseCoffre(rarete){
         etat.freeSkips += 2;
         texte = "2 passes de question";
     } else if(choix === 'vie1'){
-        if(etat.vies < 3){
+        if(etat.vies < viesMax()){
             etat.vies += 1;
             texte = "1 vie en plus";
         } else {
@@ -1600,8 +1737,8 @@ function appliquerRecompenseCoffre(rarete){
             texte = d + " diamants (vies deja au maximum)";
         }
     } else if(choix === 'vie2'){
-        if(etat.vies < 3){
-            etat.vies = Math.min(3, etat.vies + 2);
+        if(etat.vies < viesMax()){
+            etat.vies = Math.min(viesMax(), etat.vies + 2);
             texte = "2 vies en plus";
         } else {
             let d = tirerDiamantsDansLaPlage(101, 500);
@@ -1612,7 +1749,7 @@ function appliquerRecompenseCoffre(rarete){
         etat.regenBoostActive = true;
         texte = "Regeneration de vies 2x plus rapide jusqu'a vies pleines !";
     } else if(choix === 'viesFull'){
-        etat.vies = 3;
+        etat.vies = viesMax();
         texte = "Toutes tes vies restaurees d'un coup ! (tres tres tres rare)";
     } else if(choix === 'regenSingle'){
         etat.regenBoostSingleActive = true;
@@ -1625,17 +1762,7 @@ function appliquerRecompenseCoffre(rarete){
     return texte;
 }
 
-function finaliserCoffreNode(i){
-    let rarete = tirerRarete();
-    let texte = appliquerRecompenseCoffre(rarete);
-    let p = prog();
-    p.coffresOouverts = p.coffresOouverts || [];
-    p.coffresOouverts.push(i);
-    sauvegarder();
-    afficherResultatCoffre(rarete, texte);
-}
-
-function afficherResultatCoffre(rarete, texte){
+function afficherResultatCoffre(rarete, texte, retourBoutique){
     const app = document.getElementById("app");
     let pastille = ['⚪','🔵','🟣','🟡'][rarete.index] || '⚪';
     app.innerHTML = `
@@ -1647,12 +1774,13 @@ function afficherResultatCoffre(rarete, texte){
             <h2 style="color:${rarete.couleur};">Coffre ${rarete.nom} ! ${pastille}</h2>
             <div class="chest-anim" style="animation:none;">🎁</div>
             <p>Tu as obtenu : <b>${texte}</b></p>
-            <button class="main-btn" onclick="afficherAccueil()">Continuer</button>
+            <button class="main-btn" onclick="${retourBoutique ? 'ouvrirBoutique()' : 'afficherAccueil()'}">${retourBoutique ? 'Retour a la boutique' : 'Continuer'}</button>
         </div>
     `;
 }
 
 function terminerLeconAffichage(){
+    afficherNav();
     let totalQuestions = activeQuestions.length + erreursLecon;
     let pourcentage = totalQuestions > 0 ? Math.round((activeQuestions.length / totalQuestions) * 100) : 100;
 
@@ -1679,11 +1807,15 @@ function gererErreur(erreurMineure){
         let perte = currentChapitre ? currentChapitre.pertemult : 1;
         currentLessonDiamonds = Math.max(0, currentLessonDiamonds - perte);
         if(!erreurMineure && !etat.infiniteLivesActive){
-            etat.vies = (etat.vies ?? 3) - 1;
-            if(etat.vies <= 0){
-                etat.vies = 0;
+            if(aAbonnementSuper() && !superErreurPardonneeUtilisee){
+                superErreurPardonneeUtilisee = true;
+            } else {
+                etat.vies = (etat.vies ?? 3) - 1;
+                if(etat.vies <= 0){
+                    etat.vies = 0;
+                }
+                etat.dernierePerteVie = Date.now();
             }
-            etat.dernierePerteVie = Date.now();
         }
     }
     sauvegarder();
@@ -1848,6 +1980,7 @@ function getLevelSkipPrice(){
 }
 
 function ouvrirBoutique(){
+    afficherNav();
     if(!etat.pseudo) return;
     let skipPrice = getLevelSkipPrice();
     const app = document.getElementById("app");
@@ -1861,10 +1994,25 @@ function ouvrirBoutique(){
 
     let reparerHtml = (etat.streakBroken && etat.feu === 0) ? `
         <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px; background:#fff3f3; border-radius:12px; padding:10px;">
-            <p><b>🔧 Reparer ta serie</b><br>Ta serie a ete brisee. Restaure-la a ${etat.previousStreakValue || 1} jour(s).<br>20 000 Diamants</p>
+            <p><b>🔧 Reparer ta serie</b><br>Ta serie a ete brisee. Restaure-la a ${etat.previousStreakValue || 1} jour(s).<br>${prixAvecReduc(20000).toLocaleString()} Diamants</p>
             <button class="main-btn" style="padding:10px 20px; font-size:16px; background:#ff9800; border-bottom-color:#c77000;" onclick="acheterBoutique('repareSerie')">Reparer</button>
         </div>
     ` : '';
+
+    let abonnementActif = aAbonnementSuper();
+    let superHtml = `
+        <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px; background:linear-gradient(135deg,#2f8fff,#ffffff); border-radius:12px; padding:12px; color:#1a1a2e;">
+            <p><b>⭐ ElmañoSuper</b><br>
+            6 vies, recharge en 1h20, -50% boutique, pseudo en degrade, 1ere grosse faute pardonnee, changement de pseudo gratuit illimite.</p>
+            ${abonnementActif ? `<p style="font-weight:800; color:#1a5fb4;">Actif jusqu'au ${new Date(etat.abonnementSuperExpiry).toLocaleDateString()}</p>` : `
+                <button class="main-btn" style="background:#2f8fff; border-bottom-color:#1a5fb4;" onclick="acheterBoutique('superDiamants')">Acheter (1 mois) - 1 999 999 💎</button>
+                <p style="font-size:13px; color:#333; margin-top:12px; margin-bottom:5px;">Ou gratuitement en regardant des pubs :</p>
+                <div class="progress-wrap"><div class="progress-bar" style="width:${Math.min(100, (etat.abonnementSuperAdsWatched || 0) / 500 * 100)}%; background:#2f8fff;"></div></div>
+                <p style="font-size:13px; color:#333; margin-top:6px;">${etat.abonnementSuperAdsWatched || 0} / 500 pubs regardees</p>
+                <button class="main-btn" style="background:#888; border-bottom-color:#666;" onclick="regarderPub()">Regarder une pub (30 sec)</button>
+            `}
+        </div>
+    `;
 
     app.innerHTML = `
         <div class="top">
@@ -1874,25 +2022,26 @@ function ouvrirBoutique(){
         <div class="carte">
             <h2>Magasin</h2>
             ${coffresGratuitsHtml}
+            ${superHtml}
             ${reparerHtml}
             <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
-                <p><b>❤️ +1 Vie</b><br>5 000 Diamants</p>
+                <p><b>❤️ +1 Vie</b><br>${prixAvecReduc(5000).toLocaleString()} Diamants</p>
                 <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('vie1')">Acheter</button>
             </div>
             <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
-                <p><b>❤️❤️❤️ Recharge complete de vies</b><br>14 500 Diamants</p>
+                <p><b>❤️❤️❤️ Recharge complete de vies</b><br>${prixAvecReduc(14500).toLocaleString()} Diamants</p>
                 <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('viesFull')">Acheter</button>
             </div>
             <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
-                <p><b>Gel de serie 1 jour</b><br>25 000 Diamants</p>
+                <p><b>Gel de serie 1 jour</b><br>${prixAvecReduc(25000).toLocaleString()} Diamants</p>
                 <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('gel1')">Acheter</button>
             </div>
             <div style="margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
-                <p><b>Gel de serie 2 jours</b><br>45 000 Diamants</p>
+                <p><b>Gel de serie 2 jours</b><br>${prixAvecReduc(45000).toLocaleString()} Diamants</p>
                 <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('gel2')">Acheter</button>
             </div>
             <div style="margin-bottom:10px;">
-                <p><b>Saut de question / niveau</b><br>${skipPrice.toLocaleString()} Diamants</p>
+                <p><b>Saut de question / niveau</b><br>${prixAvecReduc(skipPrice).toLocaleString()} Diamants</p>
                 <button class="main-btn" style="padding:10px 20px; font-size:16px;" onclick="acheterBoutique('saut')">Acheter</button>
             </div>
             <div id="shop-error" class="error-msg">${shopErrorMsg}</div>
@@ -1901,11 +2050,93 @@ function ouvrirBoutique(){
     `;
 }
 
+const pubsJeu = [
+    {
+        couleur: "linear-gradient(135deg,#2f8fff,#e8f2ff)",
+        contenu: `
+            <div class="pub-emoji">⭐❤️❤️❤️❤️❤️❤️</div>
+            <h2 style="color:#1a5fb4;">ElmañoSuper</h2>
+            <p style="color:#333;">6 vies, recharge en 1h20, -50% en boutique, pseudo en degrade et bien plus !</p>
+        `
+    },
+    {
+        couleur: "linear-gradient(135deg,#ea2b2b,#ffe9a8)",
+        contenu: `
+            <div class="pub-emoji">⚡👑💎</div>
+            <h2 style="color:#ea2b2b;">Mode Mythique</h2>
+            <p style="color:#333;">Retente tes lecons deja terminees, 1 seule vie, une seule tentative, grosse recompense !</p>
+        `
+    },
+    {
+        couleur: "linear-gradient(135deg,#58cc02,#dff5ec)",
+        contenu: `
+            <div class="pub-emoji">🌍📚🎁</div>
+            <h2 style="color:#3c8e00;">Ma Langue</h2>
+            <p style="color:#333;">Elmaño, Espagnol, Portugais... coffres, series et diamants t'attendent chaque jour !</p>
+        `
+    }
+];
+
+function regarderPub(){
+    masquerNav();
+    let pub = pubsJeu[Math.floor(Math.random() * pubsJeu.length)];
+    afficherPubEnCours(pub);
+}
+
+function afficherPubEnCours(pub){
+    const app = document.getElementById("app");
+    let secondes = 30;
+    app.innerHTML = `
+        <div class="top">
+            <div>Publicite</div>
+            <div id="pub-compteur">30 s</div>
+        </div>
+        <div class="carte" style="background:${pub.couleur};">
+            ${pub.contenu}
+        </div>
+    `;
+    let interval = setInterval(() => {
+        secondes--;
+        let el = document.getElementById('pub-compteur');
+        if(el) el.innerText = secondes + " s";
+        if(secondes <= 0){
+            clearInterval(interval);
+            finaliserPub();
+        }
+    }, 1000);
+}
+
+function finaliserPub(){
+    afficherNav();
+    etat.abonnementSuperAdsWatched = (etat.abonnementSuperAdsWatched || 0) + 1;
+    if(etat.abonnementSuperAdsWatched >= 500){
+        etat.abonnementSuperAdsWatched = 0;
+        activerAbonnementSuper();
+        sauvegarder();
+        afficherAlerte("500 pubs regardees ! ElmañoSuper active pour 1 mois !", function(){ ouvrirBoutique(); });
+    } else {
+        sauvegarder();
+        afficherAlerte("Pub terminee ! (" + etat.abonnementSuperAdsWatched + " / 500)", function(){ ouvrirBoutique(); });
+    }
+}
+
 function acheterBoutique(article){
     shopErrorMsg = "";
-    if(article === 'gel1'){
-        if(etat.diamants >= 25000){
-            etat.diamants -= 25000;
+    if(article === 'superDiamants'){
+        if(etat.diamants >= 1999999){
+            etat.diamants -= 1999999;
+            activerAbonnementSuper();
+            sauvegarder();
+            afficherAlerte("ElmañoSuper active pour 1 mois !");
+            ouvrirBoutique();
+        } else {
+            shopErrorMsg = "Pas assez de diamants";
+            ouvrirBoutique();
+        }
+    } else if(article === 'gel1'){
+        let cout = prixAvecReduc(25000);
+        if(etat.diamants >= cout){
+            etat.diamants -= cout;
             etat.gelSerie1J++;
             sauvegarder();
             afficherAlerte("Achat reussi : Gel 1 jour ajoute !");
@@ -1915,8 +2146,9 @@ function acheterBoutique(article){
             ouvrirBoutique();
         }
     } else if(article === 'gel2'){
-        if(etat.diamants >= 45000){
-            etat.diamants -= 45000;
+        let cout = prixAvecReduc(45000);
+        if(etat.diamants >= cout){
+            etat.diamants -= cout;
             etat.gelSerie2J++;
             sauvegarder();
             afficherAlerte("Achat reussi : Gel 2 jours ajoute !");
@@ -1926,7 +2158,7 @@ function acheterBoutique(article){
             ouvrirBoutique();
         }
     } else if(article === 'saut'){
-        let price = getLevelSkipPrice();
+        let price = prixAvecReduc(getLevelSkipPrice());
         if(etat.diamants >= price){
             etat.diamants -= price;
             etat.freeSkips++;
@@ -1939,14 +2171,15 @@ function acheterBoutique(article){
             ouvrirBoutique();
         }
     } else if(article === 'vie1'){
-        if(etat.vies >= 3 && !etat.infiniteLivesActive){
+        if(etat.vies >= viesMax() && !etat.infiniteLivesActive){
             shopErrorMsg = "Tu as deja toutes tes vies !";
             ouvrirBoutique();
             return;
         }
-        if(etat.diamants >= 5000){
-            etat.diamants -= 5000;
-            etat.vies = Math.min(3, etat.vies + 1);
+        let cout = prixAvecReduc(5000);
+        if(etat.diamants >= cout){
+            etat.diamants -= cout;
+            etat.vies = Math.min(viesMax(), etat.vies + 1);
             sauvegarder();
             afficherAlerte("+1 vie ajoutee !");
             ouvrirBoutique();
@@ -1955,14 +2188,15 @@ function acheterBoutique(article){
             ouvrirBoutique();
         }
     } else if(article === 'viesFull'){
-        if(etat.vies >= 3 && !etat.infiniteLivesActive){
+        if(etat.vies >= viesMax() && !etat.infiniteLivesActive){
             shopErrorMsg = "Tu as deja toutes tes vies !";
             ouvrirBoutique();
             return;
         }
-        if(etat.diamants >= 14500){
-            etat.diamants -= 14500;
-            etat.vies = 3;
+        let cout = prixAvecReduc(14500);
+        if(etat.diamants >= cout){
+            etat.diamants -= cout;
+            etat.vies = viesMax();
             sauvegarder();
             afficherAlerte("Vies rechargees completement !");
             ouvrirBoutique();
@@ -1975,8 +2209,9 @@ function acheterBoutique(article){
             ouvrirBoutique();
             return;
         }
-        if(etat.diamants >= 20000){
-            etat.diamants -= 20000;
+        let coutReparation = prixAvecReduc(20000);
+        if(etat.diamants >= coutReparation){
+            etat.diamants -= coutReparation;
             etat.feu = etat.previousStreakValue || 1;
             etat.streakBroken = false;
             etat.lastActiveDate = dateStr(new Date());
@@ -1997,36 +2232,7 @@ function ouvrirCoffreGratuit(){
     }
     etat.coffresGratuits--;
     sauvegarder();
-    const app = document.getElementById("app");
-    app.innerHTML = `
-        <div class="top">
-            <div>Coffre Gratuit</div>
-            <div>Ouverture...</div>
-        </div>
-        <div class="carte">
-            <h2>Ouverture du coffre !</h2>
-            <div class="chest-anim">🎁</div>
-            <p>Un objet mystere est en train de sortir...</p>
-        </div>
-    `;
-    setTimeout(() => {
-        let rarete = tirerRarete();
-        let texte = appliquerRecompenseCoffre(rarete);
-        sauvegarder();
-        let pastille = ['⚪','🔵','🟣','🟡'][rarete.index] || '⚪';
-        app.innerHTML = `
-            <div class="top">
-                <div>Coffre ${rarete.nom}</div>
-                <div>${etat.diamants} 💎</div>
-            </div>
-            <div class="carte">
-                <h2 style="color:${rarete.couleur};">Coffre ${rarete.nom} ! ${pastille}</h2>
-                <div class="chest-anim" style="animation:none;">🎁</div>
-                <p>Tu as obtenu : <b>${texte}</b></p>
-                <button class="main-btn" onclick="ouvrirBoutique()">Retour a la boutique</button>
-            </div>
-        `;
-    }, 1200);
+    demarrerCoffreInteractif(null, true);
 }
 
 function acheterSautEnCours(){
@@ -2037,7 +2243,7 @@ function acheterSautEnCours(){
         afficherAlerte("Question sautee gratuitement !", function(){ afficherQuestion(); });
         return;
     }
-    let price = getLevelSkipPrice();
+    let price = prixAvecReduc(getLevelSkipPrice());
     if(etat.diamants >= price){
         etat.diamants -= price;
         etat.levelSkipPurchases = (etat.levelSkipPurchases || 0) + 1;
@@ -2053,6 +2259,7 @@ function acheterSautEnCours(){
    PARAMETRES (codes, changement de langue, reinitialisation)
    ========================================================= */
 function ouvrirParametres(){
+    afficherNav();
     if(!etat.pseudo) return;
     const app = document.getElementById("app");
     let optionsLangues = LANGUES.map(l => `<option value="${l}" ${etat.langue === l ? "selected" : ""}>${l}</option>`).join('');
@@ -2137,6 +2344,7 @@ function validerCode(){
    ADMIN
    ========================================================= */
 function ouvrirAdmin(){
+    afficherNav();
     verifierVies();
     const app = document.getElementById("app");
     let maxLecons = getMaxLecons();
@@ -2284,6 +2492,7 @@ function adminTousNiveaux(){
    INFOS
    ========================================================= */
 function ouvrirInfos(){
+    afficherNav();
     if(!etat.pseudo) return;
     const app = document.getElementById("app");
     app.innerHTML = `
@@ -2301,7 +2510,9 @@ function ouvrirInfos(){
                 • Serie quotidienne : joue au moins 1 lecon par jour, sinon utilise un Gel pour la proteger !<br>
                 • Une lecon deja terminee peut etre rejouee en mode normal a tout moment, ou tentee une seule fois en Mode Mythique (1 seule vie, gros risque, grosse recompense).<br>
                 • Petite erreur (faute de frappe proche) : la question recommence, sans perte de vie. Grosse erreur : la bonne reponse est revelee, tu passes a la suivante et tu perds 1 vie.<br>
-                • Nouveau type d'exercice : le mot ou la phrase est ecrit dans la langue apprise, a toi de le retraduire en francais !
+                • Nouveau type d'exercice : le mot ou la phrase est ecrit dans la langue apprise, a toi de le retraduire en francais !<br>
+                • Ouverture de coffre interactive : tu peux retenter ta chance jusqu'a 3 fois avant d'ouvrir, pour esperer une meilleure rarete (elle ne redescend jamais).<br>
+                • ElmañoSuper : abonnement (1 999 999 💎/mois, ou gratuit en regardant 500 pubs de 30s) qui donne 6 vies, une recharge en 1h20, -50% en boutique, la 1ere grosse faute pardonnee par lecon, le changement de pseudo gratuit et un pseudo en degrade bleu/blanc.
             </p>
             <button class="main-btn" onclick="afficherAccueil()">Retour</button>
         </div>
@@ -2312,21 +2523,24 @@ function ouvrirInfos(){
    PROFIL
    ========================================================= */
 function ouvrirProfil(){
+    afficherNav();
     if(!etat.pseudo) return;
     let maxLecons = getMaxLecons();
     let p = prog();
     const app = document.getElementById("app");
     let superElmanoActif = etat.superElmanoExpiry && Date.now() < etat.superElmanoExpiry;
+    let abonnementActif = aAbonnementSuper();
     app.innerHTML = `
         <div class="top">
             <div>Profil</div>
             <div>${etat.diamants} Diamants</div>
         </div>
         <div class="carte">
-            <h2>${etat.pseudo}</h2>
+            <h2>${pseudoAffiche()}</h2>
+            ${abonnementActif ? '<p style="color:#2f8fff;"><b>⭐ ElmañoSuper actif jusqu\'au ' + new Date(etat.abonnementSuperExpiry).toLocaleDateString() + '</b></p>' : ''}
             <p>Langue active : <b>${etat.langue}</b></p>
             <p>Diamants : <b>${etat.diamants}</b></p>
-            <p>Vies : <b>${etat.infiniteLivesActive ? 'Infini' : (etat.vies ?? 3) + '/3'}</b></p>
+            <p>Vies : <b>${etat.infiniteLivesActive ? 'Infini' : (etat.vies ?? 3) + '/' + viesMax()}</b></p>
             <p>Gel de serie (1J) : <b>❄️ ${etat.gelSerie1J}</b></p>
             <p>Gel de serie (2J) : <b>❄️ ${etat.gelSerie2J}</b></p>
             <p>Serie : <b>🔥 ${etat.feu} jour(s)</b></p>
@@ -2346,7 +2560,7 @@ function ouvrirProfil(){
 
 function ouvrirRenommage(){
     const app = document.getElementById("app");
-    let coutTexte = (etat.pseudoChanges || 0) === 0 ? "Gratuit (1ere fois)" : "650 💎";
+    let coutTexte = aAbonnementSuper() ? "Gratuit (ElmañoSuper)" : ((etat.pseudoChanges || 0) === 0 ? "Gratuit (1ere fois)" : "650 💎");
     app.innerHTML = `
         <div class="top">
             <div>Renommer</div>
@@ -2379,7 +2593,7 @@ function validerRenommage(){
         errDiv.innerText = "Ce pseudo est deja pris !";
         return;
     }
-    if((etat.pseudoChanges || 0) > 0){
+    if(!aAbonnementSuper() && (etat.pseudoChanges || 0) > 0){
         if(etat.diamants < 650){
             errDiv.innerText = "Pas assez de diamants (650 requis) !";
             return;
